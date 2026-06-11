@@ -1,6 +1,6 @@
-name: Build Windows
+name: Build Apps (unsigned)
 
-# 精简版：只构建 Windows MSI / NSIS 安装包，不签名、不公证、不需要任何 Secret。
+# 精简版：构建 Windows + macOS 安装包，均不签名、不公证、不需要任何 Secret。
 # 触发方式：
 #   1) 在 Actions 页面手动点 "Run workflow"（workflow_dispatch）
 #   2) 推送 win-v* 开头的 tag（如 win-v3.16.3）自动触发并发布到 Release
@@ -12,6 +12,10 @@ on:
 
 permissions:
   contents: write
+
+concurrency:
+  group: build-apps-${{ github.ref_name }}
+  cancel-in-progress: true
 
 jobs:
   build-windows:
@@ -62,13 +66,90 @@ jobs:
         uses: softprops/action-gh-release@v3
         with:
           tag_name: ${{ github.ref_name }}
-          name: CC Switch ${{ github.ref_name }} (Windows)
+          name: CC Switch ${{ github.ref_name }} (unsigned)
           prerelease: true
           body: |
-            CC Switch Windows 安装包（个人构建，未做代码签名，安装时若有 SmartScreen 提示选「仍要运行」即可）。
+            CC Switch 个人构建（未做代码签名）。
 
+            ## Windows
             - `*.msi` —— MSI 安装版
             - `*-setup.exe` —— NSIS 安装版
+            > 安装时若有 SmartScreen 提示，选「更多信息」→「仍要运行」。
+
+            ## macOS（未签名/未公证）
+            - `*.dmg` —— 拖入 Applications 安装
+            - `*-macOS.zip` —— 解压得到 .app
+            > 首次打开会被 Gatekeeper 拦截，二选一解除：
+            > 1. 在「访达」里右键 App →「打开」→ 再点「打开」；或
+            > 2. 终端执行：`xattr -cr "/Applications/CC Switch.app"`
+          files: release-assets/*
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  build-macos:
+    runs-on: macos-14
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: '20'
+
+      - name: Setup Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Add macOS targets
+        run: rustup target add aarch64-apple-darwin x86_64-apple-darwin
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v6
+        with:
+          version: 10.12.3
+          run_install: false
+
+      - name: Install frontend deps
+        run: pnpm install --frozen-lockfile
+
+      - name: Build Tauri App (macOS universal, unsigned)
+        shell: bash
+        run: pnpm tauri build --target universal-apple-darwin --bundles app,dmg --config '{"bundle":{"createUpdaterArtifacts":false}}'
+
+      - name: Collect installers
+        shell: bash
+        run: |
+          set -uxo pipefail
+          mkdir -p release-assets
+          BUNDLE=src-tauri/target/universal-apple-darwin/release/bundle
+          # DMG（若 CI 生成成功）
+          find "$BUNDLE/dmg" -name "*.dmg" -exec cp {} release-assets/ \; 2>/dev/null || true
+          # .app 打成 zip，作为稳妥的保底产物
+          APP=$(find "$BUNDLE/macos" -maxdepth 1 -name "*.app" -type d | head -1 || true)
+          if [ -n "$APP" ]; then
+            ditto -c -k --sequesterRsrc --keepParent "$APP" "release-assets/CC-Switch-${GITHUB_REF_NAME}-macOS.zip"
+          fi
+          ls -la release-assets
+          # 至少要有一个产物
+          if [ -z "$(ls -A release-assets 2>/dev/null)" ]; then
+            echo "❌ 没有生成任何 macOS 产物" >&2
+            exit 1
+          fi
+
+      - name: Upload installers as workflow artifact
+        uses: actions/upload-artifact@v7
+        with:
+          name: CC-Switch-macOS
+          path: release-assets/*
+          if-no-files-found: error
+
+      - name: Publish to GitHub Release (only on tag push)
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: softprops/action-gh-release@v3
+        with:
+          tag_name: ${{ github.ref_name }}
+          name: CC Switch ${{ github.ref_name }} (unsigned)
+          prerelease: true
           files: release-assets/*
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
