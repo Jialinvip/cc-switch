@@ -549,7 +549,7 @@ export const iconMetadata: Record<string, IconMetadata> = {
     keywords: ["modelscope", "alibaba", "scope"],
     defaultColor: "#624AFF",
   },
-  One API: {
+  "One API": {
     name: "One API",
     displayName: "One API",
     category: "ai-provider",
