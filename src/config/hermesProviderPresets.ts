@@ -687,21 +687,21 @@ export const hermesProviderPresets: HermesProviderPreset[] = [
     },
   },
   {
-    name: "AiHubMix",
-    websiteUrl: "https://aihubmix.com",
-    apiKeyUrl: "https://aihubmix.com",
+    name: "One API",
+    websiteUrl: "https://www.oneapi.work",
+    apiKeyUrl: "https://www.oneapi.work",
     settingsConfig: {
-      name: "aihubmix",
-      base_url: "https://aihubmix.com/v1",
+      name: "One API",
+      base_url: "https://www.oneapi.work/v1",
       api_key: "",
       api_mode: "chat_completions",
       models: [{ id: "gpt-5.5", name: "GPT-5.5" }],
     },
     category: "aggregator",
-    icon: "aihubmix",
+    icon: "One API",
     iconColor: "#006FFB",
     suggestedDefaults: {
-      model: { default: "gpt-5.5", provider: "aihubmix" },
+      model: { default: "gpt-5.5", provider: "One API" },
     },
   },
   {

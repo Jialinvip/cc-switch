@@ -106,11 +106,11 @@ fn codex_startup_import_accepts_config_without_auth_file() {
     }
     std::fs::write(
         &config_path,
-        r#"model_provider = "aihubmix"
+        r#"model_provider = "One API"
 
-[model_providers.aihubmix]
-name = "AiHubMix"
-base_url = "https://aihubmix.example/v1"
+[model_providers.One API]
+name = "One API"
+base_url = "https://One API.example/v1"
 wire_api = "responses"
 requires_openai_auth = true
 experimental_bearer_token = "live-key"

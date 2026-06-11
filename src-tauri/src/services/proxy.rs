@@ -4931,17 +4931,17 @@ requires_openai_auth = true
         );
         let provider_b = Provider::with_id(
             "b".to_string(),
-            "AiHubMix".to_string(),
+            "One API".to_string(),
             json!({
                 "auth": {
-                    "OPENAI_API_KEY": "aihubmix-key"
+                    "OPENAI_API_KEY": "One API-key"
                 },
-                "config": r#"model_provider = "aihubmix"
+                "config": r#"model_provider = "One API"
 model = "gpt-5.4"
 
-[model_providers.aihubmix]
-name = "AiHubMix"
-base_url = "https://aihubmix.example/v1"
+[model_providers.One API]
+name = "One API"
+base_url = "https://One API.example/v1"
 wire_api = "responses"
 requires_openai_auth = true
 "#
@@ -5000,7 +5000,7 @@ requires_openai_auth = true
             toml::from_str(backup_config).expect("parse backup config");
         assert_eq!(
             parsed_backup.get("model_provider").and_then(|v| v.as_str()),
-            Some("aihubmix"),
+            Some("One API"),
             "provider-derived restore backup should preserve the provider's model_provider"
         );
         let backup_model_providers = parsed_backup
@@ -5010,10 +5010,10 @@ requires_openai_auth = true
         assert!(backup_model_providers.get("custom").is_none());
         assert_eq!(
             backup_model_providers
-                .get("aihubmix")
+                .get("One API")
                 .and_then(|v| v.get("base_url"))
                 .and_then(|v| v.as_str()),
-            Some("https://aihubmix.example/v1"),
+            Some("https://One API.example/v1"),
             "provider id should point at the hot-switched provider endpoint"
         );
 
@@ -5025,22 +5025,22 @@ requires_openai_auth = true
         let parsed_live: toml::Value = toml::from_str(live_config).expect("parse live config");
         assert_eq!(
             parsed_live.get("model_provider").and_then(|v| v.as_str()),
-            Some("aihubmix"),
+            Some("One API"),
             "hot-switched Codex live config should expose the selected provider"
         );
         assert_eq!(
             parsed_live
                 .get("model_providers")
-                .and_then(|v| v.get("aihubmix"))
+                .and_then(|v| v.get("One API"))
                 .and_then(|v| v.get("name"))
                 .and_then(|v| v.as_str()),
-            Some("AiHubMix"),
+            Some("One API"),
             "Codex app provider label should follow the selected provider"
         );
         assert_eq!(
             parsed_live
                 .get("model_providers")
-                .and_then(|v| v.get("aihubmix"))
+                .and_then(|v| v.get("One API"))
                 .and_then(|v| v.get("base_url"))
                 .and_then(|v| v.as_str()),
             Some("http://127.0.0.1:15721/v1"),
@@ -5060,14 +5060,14 @@ requires_openai_auth = true
         let parsed_live: toml::Value = toml::from_str(live_config).expect("parse live config");
         assert_eq!(
             parsed_live.get("model_provider").and_then(|v| v.as_str()),
-            Some("aihubmix"),
+            Some("One API"),
             "restored Codex live config should preserve the provider's model_provider"
         );
         assert_eq!(
             live.get("auth")
                 .and_then(|auth| auth.get("OPENAI_API_KEY"))
                 .and_then(|v| v.as_str()),
-            Some("aihubmix-key"),
+            Some("One API-key"),
             "restore should still use the hot-switched provider auth"
         );
     }

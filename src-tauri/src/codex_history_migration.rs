@@ -33,7 +33,7 @@ const CC_SWITCH_LEGACY_CODEX_MODEL_PROVIDER_IDS: &[&str] = &[
     "aicodemirror",
     "aicoding",
     "aigocode",
-    "aihubmix",
+    "One API",
     "ark_agentplan",
     "bailian",
     "bailing",
@@ -846,11 +846,11 @@ mod tests {
                 "RightCode".to_string(),
                 serde_json::json!({
                     "auth": {},
-                    "config": r#"model_provider = "aihubmix"
+                    "config": r#"model_provider = "One API"
 
-[model_providers.aihubmix]
-name = "AIHubMix"
-base_url = "https://aihubmix.example/v1"
+[model_providers.One API]
+name = "One API"
+base_url = "https://One API.example/v1"
 "#
                 }),
                 None,
@@ -863,22 +863,22 @@ base_url = "https://aihubmix.example/v1"
                     "config": r#"model_provider = "ccswitch"
 
 [model_providers.ccswitch]
-name = "AIHubMix"
-base_url = "https://aihubmix.example/v1"
+name = "One API"
+base_url = "https://One API.example/v1"
 "#
                 }),
                 None,
             ),
             Provider::with_id(
-                "normalized-aihubmix".to_string(),
+                "normalized-One API".to_string(),
                 "Already Normalized".to_string(),
                 serde_json::json!({
                     "auth": {},
                     "config": r#"model_provider = "custom"
 
 [model_providers.custom]
-name = "AIHubMix"
-base_url = "https://aihubmix.example/v1"
+name = "One API"
+base_url = "https://One API.example/v1"
 "#
                 }),
                 None,
@@ -928,7 +928,7 @@ base_url = "https://proxy.example/v1"
         let source_provider_ids = collect_source_model_provider_ids(&db).expect("collect ids");
         assert_eq!(
             source_provider_ids,
-            source_ids(&["aihubmix", "ccswitch", "rightcode"])
+            source_ids(&["One API", "ccswitch", "rightcode"])
         );
 
         let session_dir = codex_dir.join("sessions/2026/05/28");
@@ -938,7 +938,7 @@ base_url = "https://proxy.example/v1"
             &session_path,
             concat!(
                 "{\"type\":\"session_meta\",\"payload\":{\"id\":\"s1\",\"model_provider\":\"rightcode\"}}\n",
-                "{\"type\":\"session_meta\",\"payload\":{\"id\":\"s2\",\"model_provider\":\"aihubmix\"}}\n",
+                "{\"type\":\"session_meta\",\"payload\":{\"id\":\"s2\",\"model_provider\":\"One API\"}}\n",
                 "{\"type\":\"session_meta\",\"payload\":{\"id\":\"s3\",\"model_provider\":\"ccswitch\"}}\n",
                 "{\"type\":\"session_meta\",\"payload\":{\"id\":\"s4\",\"model_provider\":\"my-private-relay\"}}\n",
                 "{\"type\":\"session_meta\",\"payload\":{\"id\":\"s5\",\"model_provider\":\"openai\"}}\n",
@@ -973,7 +973,7 @@ base_url = "https://proxy.example/v1"
             );
             INSERT INTO threads (id, model_provider) VALUES
                 ('rightcode-thread', 'rightcode'),
-                ('aihubmix-thread', 'aihubmix'),
+                ('One API-thread', 'One API'),
                 ('ccswitch-thread', 'ccswitch'),
                 ('manual-thread', 'my-private-relay'),
                 ('openai-thread', 'openai'),
@@ -1014,7 +1014,7 @@ base_url = "https://proxy.example/v1"
         assert!(!template_outcome
             .migrated_provider_ids
             .iter()
-            .any(|id| id == "normalized-aihubmix"));
+            .any(|id| id == "normalized-One API"));
         assert_eq!(
             source_ids(
                 &template_outcome
@@ -1047,7 +1047,7 @@ base_url = "https://proxy.example/v1"
         );
         assert!(rightcode_config
             .get("model_providers")
-            .and_then(|value| value.get("aihubmix"))
+            .and_then(|value| value.get("One API"))
             .is_none());
 
         let ccswitch_config: toml::Value =
@@ -1082,7 +1082,7 @@ base_url = "https://proxy.example/v1"
         );
 
         let normalized_config: toml::Value =
-            toml::from_str(&config_provider_id("normalized-aihubmix"))
+            toml::from_str(&config_provider_id("normalized-One API"))
                 .expect("parse normalized config");
         assert_eq!(
             normalized_config
@@ -1168,7 +1168,7 @@ base_url = "https://proxy.example/v1"
                 model_provider TEXT NOT NULL
             );
             INSERT INTO threads (id, model_provider) VALUES
-                ('a', 'aihubmix'),
+                ('a', 'One API'),
                 ('b', 'openai'),
                 ('c', 'custom');",
         )
@@ -1186,14 +1186,14 @@ base_url = "https://proxy.example/v1"
 
         assert_eq!(changed, 0);
         let conn = Connection::open(&db_path).expect("reopen db");
-        let aihubmix_count: i64 = conn
+        let One API_count: i64 = conn
             .query_row(
-                "SELECT COUNT(*) FROM threads WHERE model_provider = 'aihubmix'",
+                "SELECT COUNT(*) FROM threads WHERE model_provider = 'One API'",
                 [],
                 |row| row.get(0),
             )
-            .expect("count aihubmix");
-        assert_eq!(aihubmix_count, 1);
+            .expect("count One API");
+        assert_eq!(One API_count, 1);
         assert!(!backup_root.exists());
     }
 
@@ -1212,7 +1212,7 @@ base_url = "https://proxy.example/v1"
             INSERT INTO threads (id, model_provider) VALUES
                 ('a', 'rightcode'),
                 ('b', 'openai'),
-                ('c', 'aihubmix');",
+                ('c', 'One API');",
         )
         .expect("seed db");
         drop(conn);
@@ -1221,7 +1221,7 @@ base_url = "https://proxy.example/v1"
         let changed = migrate_codex_state_db_provider_bucket(
             &db_path,
             &codex_dir,
-            &source_ids(&["rightcode", "aihubmix"]),
+            &source_ids(&["rightcode", "One API"]),
             &backup_root,
         )
         .expect("migrate state db");
@@ -1249,7 +1249,7 @@ base_url = "https://proxy.example/v1"
         let backup_conn = Connection::open(&backup_path).expect("open backup db");
         let backed_up_source_count: i64 = backup_conn
             .query_row(
-                "SELECT COUNT(*) FROM threads WHERE model_provider IN ('rightcode', 'aihubmix')",
+                "SELECT COUNT(*) FROM threads WHERE model_provider IN ('rightcode', 'One API')",
                 [],
                 |row| row.get(0),
             )
@@ -1265,7 +1265,7 @@ base_url = "https://proxy.example/v1"
             "RightCode".to_string(),
             serde_json::json!({
                 "auth": {},
-                "config": "model_provider = \"aihubmix\"\n\n[model_providers.aihubmix]\nname = \"AIHubMix\"\nbase_url = \"https://example.com/v1\""
+                "config": "model_provider = \"One API\"\n\n[model_providers.One API]\nname = \"One API\"\nbase_url = \"https://example.com/v1\""
             }),
             None,
         );
@@ -1283,7 +1283,7 @@ base_url = "https://proxy.example/v1"
 
         let ids = collect_source_model_provider_ids(&db).expect("collect ids");
         assert!(ids.contains("rightcode"));
-        assert!(ids.contains("aihubmix"));
+        assert!(ids.contains("One API"));
         assert!(!ids.contains("openai"));
         assert!(!ids.contains("codex-official"));
     }
@@ -1361,10 +1361,10 @@ model_provider = "my-private-relay"
         let db = Database::memory().expect("memory db");
         let mut provider = Provider::with_id(
             "generated-uuid".to_string(),
-            "AIHubMix".to_string(),
+            "One API".to_string(),
             serde_json::json!({
                 "auth": {},
-                "config": "model_provider = \"custom\"\n\n[model_providers.custom]\nname = \"AIHubMix\"\nbase_url = \"https://aihubmix.example/v1\""
+                "config": "model_provider = \"custom\"\n\n[model_providers.custom]\nname = \"One API\"\nbase_url = \"https://One API.example/v1\""
             }),
             None,
         );
@@ -1373,7 +1373,7 @@ model_provider = "my-private-relay"
         db.save_provider("codex", &provider).expect("save provider");
 
         let ids = collect_source_model_provider_ids(&db).expect("collect ids");
-        assert!(ids.contains("aihubmix"));
+        assert!(ids.contains("One API"));
         assert!(!ids.contains("generated-uuid"));
     }
 
@@ -1385,7 +1385,7 @@ model_provider = "my-private-relay"
             "Legacy Stable".to_string(),
             serde_json::json!({
                 "auth": {},
-                "config": "model_provider = \"ccswitch\"\n\n[model_providers.ccswitch]\nname = \"AIHubMix\"\nbase_url = \"https://aihubmix.example/v1\""
+                "config": "model_provider = \"ccswitch\"\n\n[model_providers.ccswitch]\nname = \"One API\"\nbase_url = \"https://One API.example/v1\""
             }),
             None,
         );
@@ -1395,7 +1395,7 @@ model_provider = "my-private-relay"
 
         let ids = collect_source_model_provider_ids(&db).expect("collect ids");
         assert!(ids.contains("ccswitch"));
-        assert!(ids.contains("aihubmix"));
+        assert!(ids.contains("One API"));
         assert!(!ids.contains("generated-uuid"));
     }
 
@@ -1407,17 +1407,17 @@ model_provider = "my-private-relay"
             "Legacy Stable".to_string(),
             serde_json::json!({
                 "auth": {},
-                "config": r#"model_provider = "aihubmix"
+                "config": r#"model_provider = "One API"
 model = "gpt-5.4"
 profile = "work"
 
-[model_providers.aihubmix]
-name = "AIHubMix"
-base_url = "https://aihubmix.example/v1"
+[model_providers.One API]
+name = "One API"
+base_url = "https://One API.example/v1"
 wire_api = "responses"
 
 [profiles.work]
-model_provider = "aihubmix"
+model_provider = "One API"
 model = "gpt-5.4"
 "#
             }),
@@ -1447,7 +1447,7 @@ model = "gpt-5.4"
         );
         assert!(parsed
             .get("model_providers")
-            .and_then(|value| value.get("aihubmix"))
+            .and_then(|value| value.get("One API"))
             .is_none());
         assert_eq!(
             parsed
@@ -1455,7 +1455,7 @@ model = "gpt-5.4"
                 .and_then(|value| value.get("custom"))
                 .and_then(|value| value.get("base_url"))
                 .and_then(|value| value.as_str()),
-            Some("https://aihubmix.example/v1")
+            Some("https://One API.example/v1")
         );
         assert_eq!(
             parsed
@@ -1473,7 +1473,7 @@ model = "gpt-5.4"
         assert_eq!(backups.len(), 1);
         let backup_text = fs::read_to_string(backups[0].path()).expect("read provider backup");
         assert!(backup_text.contains(r#""providerId": "legacy""#));
-        assert!(backup_text.contains(r#"model_provider = \"aihubmix\""#));
+        assert!(backup_text.contains(r#"model_provider = \"One API\""#));
 
         let (second, _second_backup_dir) = migrate_provider_templates_for_test(&db);
         assert!(second.migrated_provider_ids.is_empty());
@@ -1490,8 +1490,8 @@ model = "gpt-5.4"
                 "config": r#"model_provider = "ccswitch"
 
 [model_providers.ccswitch]
-name = "AIHubMix"
-base_url = "https://aihubmix.example/v1"
+name = "One API"
+base_url = "https://One API.example/v1"
 "#
             }),
             None,
@@ -1531,7 +1531,7 @@ base_url = "https://aihubmix.example/v1"
                 .and_then(|value| value.get("custom"))
                 .and_then(|value| value.get("base_url"))
                 .and_then(|value| value.as_str()),
-            Some("https://aihubmix.example/v1")
+            Some("https://One API.example/v1")
         );
     }
 
@@ -1648,12 +1648,12 @@ profile = "work"
 name = "Current"
 base_url = "https://current.example/v1"
 
-[model_providers.aihubmix]
-name = "AIHubMix"
-base_url = "https://aihubmix.example/v1"
+[model_providers.One API]
+name = "One API"
+base_url = "https://One API.example/v1"
 
 [profiles.work]
-model_provider = "aihubmix"
+model_provider = "One API"
 "#
             }),
             None,

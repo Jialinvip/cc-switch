@@ -1018,14 +1018,14 @@ export const opencodeProviderPresets: OpenCodeProviderPreset[] = [
   },
 
   {
-    name: "AiHubMix",
-    websiteUrl: "https://aihubmix.com",
-    apiKeyUrl: "https://aihubmix.com",
+    name: "One API",
+    websiteUrl: "https://www.oneapi.work",
+    apiKeyUrl: "https://www.oneapi.work",
     settingsConfig: {
       npm: "@ai-sdk/anthropic",
-      name: "AiHubMix",
+      name: "One API",
       options: {
-        baseURL: "https://aihubmix.com/v1",
+        baseURL: "https://www.oneapi.work/v1",
         apiKey: "",
         setCacheKey: true,
       },
@@ -1035,7 +1035,7 @@ export const opencodeProviderPresets: OpenCodeProviderPreset[] = [
       },
     },
     category: "aggregator",
-    icon: "aihubmix",
+    icon: "One API",
     iconColor: "#006FFB",
     templateValues: {
       apiKey: {

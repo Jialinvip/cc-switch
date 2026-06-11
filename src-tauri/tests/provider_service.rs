@@ -286,15 +286,15 @@ requires_openai_auth = true
             "new-provider".to_string(),
             Provider::with_id(
                 "new-provider".to_string(),
-                "AiHubMix".to_string(),
+                "One API".to_string(),
                 json!({
                     "auth": {"OPENAI_API_KEY": "fresh-key"},
-                    "config": r#"model_provider = "aihubmix"
+                    "config": r#"model_provider = "One API"
 model = "gpt-5.4"
 
-[model_providers.aihubmix]
-name = "AiHubMix"
-base_url = "https://aihubmix.example/v1"
+[model_providers.One API]
+name = "One API"
+base_url = "https://One API.example/v1"
 wire_api = "responses"
 requires_openai_auth = true
 "#
@@ -315,7 +315,7 @@ requires_openai_auth = true
 
     assert_eq!(
         parsed.get("model_provider").and_then(|v| v.as_str()),
-        Some("aihubmix"),
+        Some("One API"),
         "provider switching should preserve user-editable model_provider after the one-time migration"
     );
 
@@ -329,10 +329,10 @@ requires_openai_auth = true
     );
     assert_eq!(
         model_providers
-            .get("aihubmix")
+            .get("One API")
             .and_then(|v| v.get("base_url"))
             .and_then(|v| v.as_str()),
-        Some("https://aihubmix.example/v1"),
+        Some("https://One API.example/v1"),
         "selected provider id should point at the newly selected supplier endpoint"
     );
 
@@ -348,7 +348,7 @@ requires_openai_auth = true
         .and_then(|v| v.as_str())
         .unwrap_or_default();
     assert!(
-        new_config_text.contains("[model_providers.aihubmix]"),
+        new_config_text.contains("[model_providers.One API]"),
         "stored provider template should remain provider-specific"
     );
 }
@@ -385,12 +385,12 @@ requires_openai_auth = true
         "Bridge Provider".to_string(),
         json!({
             "auth": {"OPENAI_API_KEY": "bridge-key"},
-            "config": r#"model_provider = "aihubmix"
+            "config": r#"model_provider = "One API"
 model = "gpt-5.4"
 
-[model_providers.aihubmix]
-name = "AiHubMix"
-base_url = "https://aihubmix.example/v1"
+[model_providers.One API]
+name = "One API"
+base_url = "https://One API.example/v1"
 wire_api = "responses"
 requires_openai_auth = true
 "#
@@ -472,7 +472,7 @@ requires_openai_auth = true
     assert_eq!(
         parsed_live
             .get("model_providers")
-            .and_then(|v| v.get("aihubmix"))
+            .and_then(|v| v.get("One API"))
             .and_then(|v| v.get("experimental_bearer_token"))
             .and_then(|v| v.as_str()),
         Some("bridge-key"),
@@ -481,7 +481,7 @@ requires_openai_auth = true
     assert_eq!(
         parsed_live
             .get("model_providers")
-            .and_then(|v| v.get("aihubmix"))
+            .and_then(|v| v.get("One API"))
             .and_then(|v| v.get("requires_openai_auth"))
             .and_then(|v| v.as_bool()),
         Some(true)
@@ -742,15 +742,15 @@ requires_openai_auth = true
             "third-party".to_string(),
             Provider::with_id(
                 "third-party".to_string(),
-                "AiHubMix".to_string(),
+                "One API".to_string(),
                 json!({
                     "auth": {"OPENAI_API_KEY": "third-party-key"},
-                    "config": r#"model_provider = "aihubmix"
+                    "config": r#"model_provider = "One API"
 model = "gpt-5.4"
 
-[model_providers.aihubmix]
-name = "AiHubMix"
-base_url = "https://aihubmix.example/v1"
+[model_providers.One API]
+name = "One API"
+base_url = "https://One API.example/v1"
 wire_api = "responses"
 requires_openai_auth = true
 "#
@@ -1001,21 +1001,21 @@ requires_openai_auth = true
             "provider-b".to_string(),
             Provider::with_id(
                 "provider-b".to_string(),
-                "AiHubMix".to_string(),
+                "One API".to_string(),
                 json!({
-                    "auth": {"OPENAI_API_KEY": "aihubmix-key"},
-                    "config": r#"model_provider = "aihubmix"
+                    "auth": {"OPENAI_API_KEY": "One API-key"},
+                    "config": r#"model_provider = "One API"
 model = "gpt-5.4"
 profile = "work"
 
-[model_providers.aihubmix]
-name = "AiHubMix"
-base_url = "https://aihubmix.example/v1"
+[model_providers.One API]
+name = "One API"
+base_url = "https://One API.example/v1"
 wire_api = "responses"
 requires_openai_auth = true
 
 [profiles.work]
-model_provider = "aihubmix"
+model_provider = "One API"
 model = "gpt-5.4"
 "#
                 }),
@@ -1066,13 +1066,13 @@ requires_openai_auth = true
 
     assert_eq!(
         parsed.get("model_provider").and_then(|v| v.as_str()),
-        Some("aihubmix"),
+        Some("One API"),
         "backfill should restore provider b's storage-specific model_provider id"
     );
     assert!(
         parsed
             .get("model_providers")
-            .and_then(|v| v.get("aihubmix"))
+            .and_then(|v| v.get("One API"))
             .is_some(),
         "provider b should keep its own model_providers table after backfill"
     );
@@ -1082,7 +1082,7 @@ requires_openai_auth = true
             .and_then(|v| v.get("work"))
             .and_then(|v| v.get("model_provider"))
             .and_then(|v| v.as_str()),
-        Some("aihubmix"),
+        Some("One API"),
         "profile overrides should be restored to provider b's storage-specific id"
     );
 }

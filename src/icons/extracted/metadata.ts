@@ -549,11 +549,11 @@ export const iconMetadata: Record<string, IconMetadata> = {
     keywords: ["modelscope", "alibaba", "scope"],
     defaultColor: "#624AFF",
   },
-  aihubmix: {
-    name: "aihubmix",
-    displayName: "AiHubMix",
+  One API: {
+    name: "One API",
+    displayName: "One API",
     category: "ai-provider",
-    keywords: ["aihubmix", "hub", "mix", "aggregator"],
+    keywords: ["One API", "hub", "mix", "aggregator"],
     defaultColor: "#006FFB",
   },
   xiaomimimo: {

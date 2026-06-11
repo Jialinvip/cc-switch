@@ -931,11 +931,11 @@ export const openclawProviderPresets: OpenClawProviderPreset[] = [
 
   // ========== Aggregators ==========
   {
-    name: "AiHubMix",
-    websiteUrl: "https://aihubmix.com",
-    apiKeyUrl: "https://aihubmix.com",
+    name: "One API",
+    websiteUrl: "https://www.oneapi.work",
+    apiKeyUrl: "https://www.oneapi.work",
     settingsConfig: {
-      baseUrl: "https://aihubmix.com",
+      baseUrl: "https://www.oneapi.work",
       apiKey: "",
       api: "anthropic-messages",
       models: [
@@ -954,7 +954,7 @@ export const openclawProviderPresets: OpenClawProviderPreset[] = [
       ],
     },
     category: "aggregator",
-    icon: "aihubmix",
+    icon: "One API",
     iconColor: "#006FFB",
     templateValues: {
       apiKey: {
@@ -965,12 +965,12 @@ export const openclawProviderPresets: OpenClawProviderPreset[] = [
     },
     suggestedDefaults: {
       model: {
-        primary: "aihubmix/claude-opus-4-8",
-        fallbacks: ["aihubmix/claude-sonnet-4-6"],
+        primary: "One API/claude-opus-4-8",
+        fallbacks: ["One API/claude-sonnet-4-6"],
       },
       modelCatalog: {
-        "aihubmix/claude-opus-4-8": { alias: "Opus" },
-        "aihubmix/claude-sonnet-4-6": { alias: "Sonnet" },
+        "One API/claude-opus-4-8": { alias: "Opus" },
+        "One API/claude-sonnet-4-6": { alias: "Sonnet" },
       },
     },
   },
