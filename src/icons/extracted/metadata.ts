@@ -549,11 +549,11 @@ export const iconMetadata: Record<string, IconMetadata> = {
     keywords: ["modelscope", "alibaba", "scope"],
     defaultColor: "#624AFF",
   },
-  "One API": {
-    name: "One API",
-    displayName: "One API",
+  aihubmix: {
+    name: "aihubmix",
+    displayName: "AiHubMix",
     category: "ai-provider",
-    keywords: ["One API", "hub", "mix", "aggregator"],
+    keywords: ["aihubmix", "hub", "mix", "aggregator"],
     defaultColor: "#006FFB",
   },
   xiaomimimo: {
@@ -576,6 +576,13 @@ export const iconMetadata: Record<string, IconMetadata> = {
     category: "ai-provider",
     keywords: ["nvidia", "nim", "gpu"],
     defaultColor: "#74B71B",
+  },
+  oneapi: {
+    name: "oneapi",
+    displayName: "One API",
+    category: "ai-provider",
+    keywords: ["oneapi", "one api", "gateway", "relay", "aggregator"],
+    defaultColor: "#000000",
   },
   stepfun: {
     name: "stepfun",

@@ -286,15 +286,15 @@ requires_openai_auth = true
             "new-provider".to_string(),
             Provider::with_id(
                 "new-provider".to_string(),
-                "One API".to_string(),
+                "AiHubMix".to_string(),
                 json!({
                     "auth": {"OPENAI_API_KEY": "fresh-key"},
-                    "config": r#"model_provider = "One API"
+                    "config": r#"model_provider = "aihubmix"
 model = "gpt-5.4"
 
-[model_providers.One API]
-name = "One API"
-base_url = "https://One API.example/v1"
+[model_providers.aihubmix]
+name = "AiHubMix"
+base_url = "https://aihubmix.example/v1"
 wire_api = "responses"
 requires_openai_auth = true
 "#
@@ -315,7 +315,7 @@ requires_openai_auth = true
 
     assert_eq!(
         parsed.get("model_provider").and_then(|v| v.as_str()),
-        Some("One API"),
+        Some("aihubmix"),
         "provider switching should preserve user-editable model_provider after the one-time migration"
     );
 
@@ -329,10 +329,10 @@ requires_openai_auth = true
     );
     assert_eq!(
         model_providers
-            .get("One API")
+            .get("aihubmix")
             .and_then(|v| v.get("base_url"))
             .and_then(|v| v.as_str()),
-        Some("https://One API.example/v1"),
+        Some("https://aihubmix.example/v1"),
         "selected provider id should point at the newly selected supplier endpoint"
     );
 
@@ -348,7 +348,7 @@ requires_openai_auth = true
         .and_then(|v| v.as_str())
         .unwrap_or_default();
     assert!(
-        new_config_text.contains("[model_providers.One API]"),
+        new_config_text.contains("[model_providers.aihubmix]"),
         "stored provider template should remain provider-specific"
     );
 }
@@ -385,12 +385,12 @@ requires_openai_auth = true
         "Bridge Provider".to_string(),
         json!({
             "auth": {"OPENAI_API_KEY": "bridge-key"},
-            "config": r#"model_provider = "One API"
+            "config": r#"model_provider = "aihubmix"
 model = "gpt-5.4"
 
-[model_providers.One API]
-name = "One API"
-base_url = "https://One API.example/v1"
+[model_providers.aihubmix]
+name = "AiHubMix"
+base_url = "https://aihubmix.example/v1"
 wire_api = "responses"
 requires_openai_auth = true
 "#
@@ -472,7 +472,7 @@ requires_openai_auth = true
     assert_eq!(
         parsed_live
             .get("model_providers")
-            .and_then(|v| v.get("One API"))
+            .and_then(|v| v.get("aihubmix"))
             .and_then(|v| v.get("experimental_bearer_token"))
             .and_then(|v| v.as_str()),
         Some("bridge-key"),
@@ -481,7 +481,7 @@ requires_openai_auth = true
     assert_eq!(
         parsed_live
             .get("model_providers")
-            .and_then(|v| v.get("One API"))
+            .and_then(|v| v.get("aihubmix"))
             .and_then(|v| v.get("requires_openai_auth"))
             .and_then(|v| v.as_bool()),
         Some(true)
@@ -742,15 +742,15 @@ requires_openai_auth = true
             "third-party".to_string(),
             Provider::with_id(
                 "third-party".to_string(),
-                "One API".to_string(),
+                "AiHubMix".to_string(),
                 json!({
                     "auth": {"OPENAI_API_KEY": "third-party-key"},
-                    "config": r#"model_provider = "One API"
+                    "config": r#"model_provider = "aihubmix"
 model = "gpt-5.4"
 
-[model_providers.One API]
-name = "One API"
-base_url = "https://One API.example/v1"
+[model_providers.aihubmix]
+name = "AiHubMix"
+base_url = "https://aihubmix.example/v1"
 wire_api = "responses"
 requires_openai_auth = true
 "#
@@ -1001,21 +1001,21 @@ requires_openai_auth = true
             "provider-b".to_string(),
             Provider::with_id(
                 "provider-b".to_string(),
-                "One API".to_string(),
+                "AiHubMix".to_string(),
                 json!({
-                    "auth": {"OPENAI_API_KEY": "One API-key"},
-                    "config": r#"model_provider = "One API"
+                    "auth": {"OPENAI_API_KEY": "aihubmix-key"},
+                    "config": r#"model_provider = "aihubmix"
 model = "gpt-5.4"
 profile = "work"
 
-[model_providers.One API]
-name = "One API"
-base_url = "https://One API.example/v1"
+[model_providers.aihubmix]
+name = "AiHubMix"
+base_url = "https://aihubmix.example/v1"
 wire_api = "responses"
 requires_openai_auth = true
 
 [profiles.work]
-model_provider = "One API"
+model_provider = "aihubmix"
 model = "gpt-5.4"
 "#
                 }),
@@ -1066,13 +1066,13 @@ requires_openai_auth = true
 
     assert_eq!(
         parsed.get("model_provider").and_then(|v| v.as_str()),
-        Some("One API"),
+        Some("aihubmix"),
         "backfill should restore provider b's storage-specific model_provider id"
     );
     assert!(
         parsed
             .get("model_providers")
-            .and_then(|v| v.get("One API"))
+            .and_then(|v| v.get("aihubmix"))
             .is_some(),
         "provider b should keep its own model_providers table after backfill"
     );
@@ -1082,7 +1082,7 @@ requires_openai_auth = true
             .and_then(|v| v.get("work"))
             .and_then(|v| v.get("model_provider"))
             .and_then(|v| v.as_str()),
-        Some("One API"),
+        Some("aihubmix"),
         "profile overrides should be restored to provider b's storage-specific id"
     );
 }
@@ -1910,4 +1910,63 @@ fn provider_service_delete_current_provider_returns_error() {
         ),
         other => panic!("expected Config/Message error, got {other:?}"),
     }
+}
+
+#[test]
+fn recover_from_crash_without_backup_cleans_placeholder_instead_of_writing_it_back() {
+    let _guard = test_mutex().lock().expect("acquire test mutex");
+    reset_test_fs();
+    let _home = ensure_test_home();
+
+    // 接管态 Claude Live，且 DB 中无备份（模拟切换 app_config_dir 后新库首启的场景）
+    let taken_over_live = json!({
+        "env": {
+            "ANTHROPIC_BASE_URL": "http://127.0.0.1:15721",
+            "ANTHROPIC_AUTH_TOKEN": "PROXY_MANAGED"
+        }
+    });
+    let settings_path = get_claude_settings_path();
+    std::fs::create_dir_all(settings_path.parent().expect("settings dir")).expect("create dir");
+    std::fs::write(
+        &settings_path,
+        serde_json::to_string_pretty(&taken_over_live).expect("serialize taken over live"),
+    )
+    .expect("write taken over live");
+
+    let state = create_test_state().expect("create test state");
+
+    // 模拟历史异常：接管态 Live 已被导入成 current provider（SSOT 被污染）
+    let provider = Provider::with_id(
+        "default".to_string(),
+        "default".to_string(),
+        taken_over_live.clone(),
+        None,
+    );
+    state
+        .db
+        .save_provider(AppType::Claude.as_str(), &provider)
+        .expect("save placeholder provider");
+    state
+        .db
+        .set_current_provider(AppType::Claude.as_str(), "default")
+        .expect("set current provider");
+
+    futures::executor::block_on(state.proxy_service.recover_from_crash())
+        .expect("recover from crash");
+
+    let live_after: serde_json::Value =
+        read_json_file(&settings_path).expect("read live settings after recovery");
+    let env = live_after.get("env").cloned().unwrap_or_else(|| json!({}));
+    assert_ne!(
+        env.get("ANTHROPIC_AUTH_TOKEN").and_then(|v| v.as_str()),
+        Some("PROXY_MANAGED"),
+        "recovery must not write the placeholder back to live"
+    );
+    assert!(
+        env.get("ANTHROPIC_BASE_URL")
+            .and_then(|v| v.as_str())
+            .map(|url| !url.starts_with("http://127.0.0.1"))
+            .unwrap_or(true),
+        "recovery must drop the local proxy base URL"
+    );
 }

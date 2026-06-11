@@ -817,18 +817,18 @@ requires_openai_auth = true`,
     iconColor: "#000000",
   },
   {
-    name: "One API",
-    websiteUrl: "https://www.oneapi.work",
+    name: "AiHubMix",
+    websiteUrl: "https://aihubmix.com",
     category: "aggregator",
     auth: generateThirdPartyAuth(""),
     config: generateThirdPartyConfig(
-      "One API",
-      "https://www.oneapi.work/v1",
+      "aihubmix",
+      "https://aihubmix.com/v1",
       "gpt-5.5",
     ),
     endpointCandidates: [
-      "https://www.oneapi.work/v1",
-      "https://api.One API.com/v1",
+      "https://aihubmix.com/v1",
+      "https://api.aihubmix.com/v1",
     ],
   },
   {
@@ -858,6 +858,20 @@ requires_openai_auth = true`,
     endpointCandidates: ["https://www.dmxapi.cn/v1"],
     isPartner: true, // 合作伙伴
     partnerPromotionKey: "dmxapi", // 促销信息 i18n key
+  },
+  {
+    name: "One API",
+    websiteUrl: "https://www.oneapi.work",
+    apiKeyUrl: "https://www.oneapi.work",
+    category: "aggregator",
+    auth: generateThirdPartyAuth(""),
+    config: generateThirdPartyConfig(
+      "oneapi",
+      "https://www.oneapi.work/v1",
+      "gpt-5.5",
+    ),
+    endpointCandidates: ["https://www.oneapi.work/v1"],
+    icon: "oneapi",
   },
   {
     name: "PackyCode",

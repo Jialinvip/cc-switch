@@ -687,21 +687,21 @@ export const hermesProviderPresets: HermesProviderPreset[] = [
     },
   },
   {
-    name: "One API",
-    websiteUrl: "https://www.oneapi.work",
-    apiKeyUrl: "https://www.oneapi.work",
+    name: "AiHubMix",
+    websiteUrl: "https://aihubmix.com",
+    apiKeyUrl: "https://aihubmix.com",
     settingsConfig: {
-      name: "One API",
-      base_url: "https://www.oneapi.work/v1",
+      name: "aihubmix",
+      base_url: "https://aihubmix.com/v1",
       api_key: "",
       api_mode: "chat_completions",
       models: [{ id: "gpt-5.5", name: "GPT-5.5" }],
     },
     category: "aggregator",
-    icon: "One API",
+    icon: "aihubmix",
     iconColor: "#006FFB",
     suggestedDefaults: {
-      model: { default: "gpt-5.5", provider: "One API" },
+      model: { default: "gpt-5.5", provider: "aihubmix" },
     },
   },
   {
@@ -791,6 +791,23 @@ export const hermesProviderPresets: HermesProviderPreset[] = [
     partnerPromotionKey: "dmxapi",
     suggestedDefaults: {
       model: { default: "gpt-5.5", provider: "dmxapi" },
+    },
+  },
+  {
+    name: "One API",
+    websiteUrl: "https://www.oneapi.work",
+    apiKeyUrl: "https://www.oneapi.work",
+    settingsConfig: {
+      name: "oneapi",
+      base_url: "https://www.oneapi.work/v1",
+      api_key: "",
+      api_mode: "chat_completions",
+      models: [{ id: "gpt-5.5", name: "GPT-5.5" }],
+    },
+    category: "aggregator",
+    icon: "oneapi",
+    suggestedDefaults: {
+      model: { default: "gpt-5.5", provider: "oneapi" },
     },
   },
   {

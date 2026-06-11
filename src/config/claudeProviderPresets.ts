@@ -564,21 +564,21 @@ export const providerPresets: ProviderPreset[] = [
     category: "cn_official",
   },
   {
-    name: "One API",
-    websiteUrl: "https://www.oneapi.work",
-    apiKeyUrl: "https://www.oneapi.work",
+    name: "AiHubMix",
+    websiteUrl: "https://aihubmix.com",
+    apiKeyUrl: "https://aihubmix.com",
     // 说明：该供应商使用 ANTHROPIC_API_KEY（而非 ANTHROPIC_AUTH_TOKEN）
     apiKeyField: "ANTHROPIC_API_KEY",
     settingsConfig: {
       env: {
-        ANTHROPIC_BASE_URL: "https://www.oneapi.work",
+        ANTHROPIC_BASE_URL: "https://aihubmix.com",
         ANTHROPIC_API_KEY: "",
       },
     },
     // 请求地址候选（用于地址管理/测速），用户可自行选择/覆盖
-    endpointCandidates: ["https://www.oneapi.work", "https://api.One API.com"],
+    endpointCandidates: ["https://aihubmix.com", "https://api.aihubmix.com"],
     category: "aggregator",
-    icon: "One API",
+    icon: "aihubmix",
     iconColor: "#006FFB",
   },
   {
@@ -1066,6 +1066,20 @@ export const providerPresets: ProviderPreset[] = [
     endpointCandidates: ["https://api.novita.ai/anthropic"],
     icon: "novita",
     iconColor: "#000000",
+  },
+  {
+    name: "One API",
+    websiteUrl: "https://www.oneapi.work",
+    apiKeyUrl: "https://www.oneapi.work",
+    settingsConfig: {
+      env: {
+        ANTHROPIC_BASE_URL: "https://www.oneapi.work",
+        ANTHROPIC_AUTH_TOKEN: "",
+      },
+    },
+    category: "aggregator",
+    endpointCandidates: ["https://www.oneapi.work"],
+    icon: "oneapi",
   },
   {
     name: "GitHub Copilot",

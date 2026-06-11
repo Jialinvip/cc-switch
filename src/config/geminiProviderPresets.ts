@@ -356,6 +356,24 @@ export const geminiProviderPresets: GeminiProviderPreset[] = [
     icon: "lemondata",
   },
   {
+    name: "One API",
+    websiteUrl: "https://www.oneapi.work",
+    apiKeyUrl: "https://www.oneapi.work",
+    settingsConfig: {
+      env: {
+        GOOGLE_GEMINI_BASE_URL: "https://www.oneapi.work",
+        GEMINI_API_KEY: "",
+        GEMINI_MODEL: "gemini-3.5-flash",
+      },
+    },
+    baseURL: "https://www.oneapi.work",
+    model: "gemini-3.5-flash",
+    description: "One API",
+    category: "aggregator",
+    endpointCandidates: ["https://www.oneapi.work"],
+    icon: "oneapi",
+  },
+  {
     name: "CherryIN",
     websiteUrl: "https://open.cherryin.ai",
     apiKeyUrl: "https://open.cherryin.ai/console/token",

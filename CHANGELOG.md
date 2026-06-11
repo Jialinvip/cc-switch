@@ -18,7 +18,7 @@ Development since v3.16.1 focuses on broadening data portability and usage obser
 - **Official Subscription Quota Template**: Added an explicit, opt-in "official subscription" usage template for Claude, Codex, and Gemini official providers that queries plan quota via CLI/OAuth credentials, replacing the previous implicit auto-query. It is disabled by default and enabled from the usage-script modal with a configurable refresh interval.
 - **Unsupported Image Fallback Rectifier**: Added a proxy rectifier that replaces Anthropic image blocks with an `[Unsupported Image]` marker when the routed model is text-only (declared, or detected via a built-in model-name heuristic) or when the upstream rejects image input, so conversations are not interrupted. A new Settings toggle controls the fallback, with a separate toggle for the heuristic detection.
 - **ZenMux Token Plan Provider**: Added ZenMux as a Token Plan coding-plan provider that accepts a manually entered API key and base URL in the usage-script modal and renders its quota with USD-denominated used / limit values (#2709).
-- **CherryIN Preset**: Added the CherryIN aggregator gateway as a quick-config preset across all seven supported apps — Anthropic-format endpoint for Claude Code / Claude Desktop / OpenClaw / Hermes, `@ai-sdk/anthropic` for OpenCode, the OpenAI-compatible endpoint for Codex, and the Gemini-compatible endpoint for Gemini CLI — with the official brand icon, placed next to One API (#3643).
+- **CherryIN Preset**: Added the CherryIN aggregator gateway as a quick-config preset across all seven supported apps — Anthropic-format endpoint for Claude Code / Claude Desktop / OpenClaw / Hermes, `@ai-sdk/anthropic` for OpenCode, the OpenAI-compatible endpoint for Codex, and the Gemini-compatible endpoint for Gemini CLI — with the official brand icon, placed next to AiHubMix (#3643).
 - **CCSub Preset**: Added CCSub, a multi-model aggregator partner, as a quick-config preset across six apps — Claude Code, Claude Desktop, Codex, OpenCode, OpenClaw, and Hermes — with the official brand icon and the partner referral link prefilled as the API-key signup URL (`gpt-5.5` for the OpenAI-compatible Codex and OpenCode endpoints).
 - **Codex CLI Models Endpoint**: The local proxy now answers `GET /v1/models`, which Codex CLI probes at startup, returning the cc-switch-managed Codex model catalog. A stale-catalog guard parses the live `config.toml` and only serves the catalog when `model_catalog_json` still references the cc-switch-owned file, so a leftover catalog from a previous provider is not advertised (#3818).
 - **Codex Chat File and Audio Attachments**: The Codex Responses-to-Chat converter now maps `input_file` parts (carrying `file_id` or inline `file_data`) and `input_audio` parts into their Chat Completions equivalents, and emits top-level `input_*` items that were previously dropped, so file and audio attachments reach Chat-only Codex upstreams.
@@ -349,7 +349,7 @@ Development since v3.13.0 focuses on onboarding Hermes Agent as a first-class ma
 
 - **Hermes Agent Support (6th Managed App)**: Added Hermes Agent as a first-class managed app with database migration v9→v10, full Rust command surface, YAML-backed `~/.hermes/config.yaml` read/write with atomic backups, MCP sync, Skills sync, session manager with SQLite + JSONL support, and dedicated frontend panels. Supports four API protocols (`chat_completions`, `anthropic_messages`, `codex_responses`, `bedrock_converse`) aligned with Hermes Agent 0.10.0 schema. Read-only rendering for providers owned by the user-authored `providers:` dict, with deep configuration delegated to the Hermes Web UI.
 - **Hermes Memory Panel**: Added a Memory panel for editing `MEMORY.md` and `USER.md` directly from CC Switch, with an enable switch, character-count limits, and a live save flow. Replaces the Prompts entry for Hermes.
-- **Hermes Provider Presets**: Added ~50 Hermes provider presets spanning Nous Research, Shengsuanyun, OpenRouter, DeepSeek, Together AI, StepFun, Zhipu GLM, Bailian, Kimi, MiniMax, DouBao, BaiLing, ModelScope, KAT-Coder, PackyCode, Cubence, AIGoCode, RightCode, AICodeMirror, AICoding, CrazyRouter, SSSAiCode, Micu, CTok.ai, DDSHub, E-FlowCode, LionCCAPI, PIPELLM, Compshare, SiliconFlow, One API, DMXAPI, TheRouter, Novita, Nvidia, and Xiaomi MiMo.
+- **Hermes Provider Presets**: Added ~50 Hermes provider presets spanning Nous Research, Shengsuanyun, OpenRouter, DeepSeek, Together AI, StepFun, Zhipu GLM, Bailian, Kimi, MiniMax, DouBao, BaiLing, ModelScope, KAT-Coder, PackyCode, Cubence, AIGoCode, RightCode, AICodeMirror, AICoding, CrazyRouter, SSSAiCode, Micu, CTok.ai, DDSHub, E-FlowCode, LionCCAPI, PIPELLM, Compshare, SiliconFlow, AiHubMix, DMXAPI, TheRouter, Novita, Nvidia, and Xiaomi MiMo.
 - **Claude Opus 4.7 Support**: Added Claude Opus 4.7 with adaptive thinking whitelisting, per-million pricing seed, and Bedrock SKU (`anthropic.claude-opus-4-7` / `global.anthropic.claude-opus-4-7`, dropping the legacy `-v1` suffix). Migrated all aggregator and Bedrock presets to Opus 4.7 as the default Opus model.
 - **Claude `max` Effort Tier**: Upgraded the Claude effort dropdown from `high` to `max` for extended reasoning capacity.
 - **Gemini Native API Proxy**: Added `api_format = "gemini_native"` so the proxy can forward to Google's `generateContent` API with full streaming, schema conversion, and shadow request support. Adds `gemini_url.rs`, `gemini_schema.rs`, `gemini_shadow.rs`, `streaming_gemini.rs`, and `transform_gemini.rs` under the proxy providers module.
@@ -1263,7 +1263,7 @@ Second beta release focusing on proxy stability, import safety, and provider pre
 ### Added
 
 - **DMXAPI Partner** - Added DMXAPI as an official partner provider preset
-- **Provider Icons** - Added provider icons for OpenRouter, LongCat, ModelScope, and One API
+- **Provider Icons** - Added provider icons for OpenRouter, LongCat, ModelScope, and AiHubMix
 
 ### Changed
 
@@ -1673,7 +1673,7 @@ v3.7.0 represents a major evolution from "Provider Switcher" to **"All-in-One AI
   - Real-time TOML syntax validation for Codex configuration
 - **Auto-sync on Directory Change** - When switching Claude/Codex config directories (e.g., WSL environment), automatically sync current provider to new directory without manual operation
 - **Load Live Config When Editing Active Provider** - When editing the currently active provider, prioritize displaying the actual effective configuration to protect user manual modifications
-- **New Provider Presets** - DMXAPI, Azure Codex, AnyRouter, One API, MiniMax
+- **New Provider Presets** - DMXAPI, Azure Codex, AnyRouter, AiHubMix, MiniMax
 - **Partner Promotion Mechanism** - Support ecosystem partner promotion (e.g., Zhipu GLM Z.ai)
 
 ### 🔧 Improvements

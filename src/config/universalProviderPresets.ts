@@ -75,6 +75,21 @@ export const universalProviderPresets: UniversalProviderPreset[] = [
       "NewAPI 是一个可自部署的 API 网关，支持 Anthropic、OpenAI、Gemini 等多种协议",
   },
   {
+    name: "One API",
+    providerType: "oneapi",
+    defaultApps: {
+      claude: true,
+      codex: true,
+      gemini: true,
+    },
+    defaultModels: NEWAPI_DEFAULT_MODELS,
+    websiteUrl: "https://www.oneapi.work",
+    icon: "oneapi",
+    iconColor: "#000000",
+    description:
+      "One API 是一个支持 Anthropic、OpenAI、Gemini 等多种协议的 API 网关",
+  },
+  {
     name: "自定义网关",
     providerType: "custom_gateway",
     defaultApps: {

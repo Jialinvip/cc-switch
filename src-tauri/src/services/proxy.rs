@@ -1632,7 +1632,7 @@ impl ProxyService {
     ///
     /// 返回值：
     /// - Ok(true)：已成功写回
-    /// - Ok(false)：缺少当前供应商/供应商不存在，无法写回
+    /// - Ok(false)：缺少当前供应商/供应商不存在/供应商本身含占位符，无法写回
     fn restore_live_from_ssot_for_app(&self, app_type: &AppType) -> Result<bool, String> {
         let current_id = crate::settings::get_effective_current_provider(&self.db, app_type)
             .map_err(|e| format!("获取 {app_type:?} 当前供应商失败: {e}"))?;
@@ -1649,6 +1649,16 @@ impl ProxyService {
         let Some(provider) = providers.get(&current_id) else {
             return Ok(false);
         };
+
+        // 供应商配置本身含接管占位符时不可写回（历史异常：接管期间 Live 被
+        // 误导入成了供应商）。写回只会把占位符固化进 Live；返回 Ok(false)
+        // 让调用方落到"清理占位符"兜底。
+        if Self::live_has_proxy_placeholder_for_app(app_type, &provider.settings_config) {
+            log::warn!(
+                "{app_type:?} 当前供应商配置含代理接管占位符（疑似接管期间被导入的残留），跳过 SSOT 写回，改走占位符清理"
+            );
+            return Ok(false);
+        }
 
         write_live_with_common_config(self.db.as_ref(), app_type, provider)
             .map_err(|e| format!("写入 {app_type:?} Live 配置失败: {e}"))?;
@@ -4931,17 +4941,17 @@ requires_openai_auth = true
         );
         let provider_b = Provider::with_id(
             "b".to_string(),
-            "One API".to_string(),
+            "AiHubMix".to_string(),
             json!({
                 "auth": {
-                    "OPENAI_API_KEY": "One API-key"
+                    "OPENAI_API_KEY": "aihubmix-key"
                 },
-                "config": r#"model_provider = "One API"
+                "config": r#"model_provider = "aihubmix"
 model = "gpt-5.4"
 
-[model_providers.One API]
-name = "One API"
-base_url = "https://One API.example/v1"
+[model_providers.aihubmix]
+name = "AiHubMix"
+base_url = "https://aihubmix.example/v1"
 wire_api = "responses"
 requires_openai_auth = true
 "#
@@ -5000,7 +5010,7 @@ requires_openai_auth = true
             toml::from_str(backup_config).expect("parse backup config");
         assert_eq!(
             parsed_backup.get("model_provider").and_then(|v| v.as_str()),
-            Some("One API"),
+            Some("aihubmix"),
             "provider-derived restore backup should preserve the provider's model_provider"
         );
         let backup_model_providers = parsed_backup
@@ -5010,10 +5020,10 @@ requires_openai_auth = true
         assert!(backup_model_providers.get("custom").is_none());
         assert_eq!(
             backup_model_providers
-                .get("One API")
+                .get("aihubmix")
                 .and_then(|v| v.get("base_url"))
                 .and_then(|v| v.as_str()),
-            Some("https://One API.example/v1"),
+            Some("https://aihubmix.example/v1"),
             "provider id should point at the hot-switched provider endpoint"
         );
 
@@ -5025,22 +5035,22 @@ requires_openai_auth = true
         let parsed_live: toml::Value = toml::from_str(live_config).expect("parse live config");
         assert_eq!(
             parsed_live.get("model_provider").and_then(|v| v.as_str()),
-            Some("One API"),
+            Some("aihubmix"),
             "hot-switched Codex live config should expose the selected provider"
         );
         assert_eq!(
             parsed_live
                 .get("model_providers")
-                .and_then(|v| v.get("One API"))
+                .and_then(|v| v.get("aihubmix"))
                 .and_then(|v| v.get("name"))
                 .and_then(|v| v.as_str()),
-            Some("One API"),
+            Some("AiHubMix"),
             "Codex app provider label should follow the selected provider"
         );
         assert_eq!(
             parsed_live
                 .get("model_providers")
-                .and_then(|v| v.get("One API"))
+                .and_then(|v| v.get("aihubmix"))
                 .and_then(|v| v.get("base_url"))
                 .and_then(|v| v.as_str()),
             Some("http://127.0.0.1:15721/v1"),
@@ -5060,14 +5070,14 @@ requires_openai_auth = true
         let parsed_live: toml::Value = toml::from_str(live_config).expect("parse live config");
         assert_eq!(
             parsed_live.get("model_provider").and_then(|v| v.as_str()),
-            Some("One API"),
+            Some("aihubmix"),
             "restored Codex live config should preserve the provider's model_provider"
         );
         assert_eq!(
             live.get("auth")
                 .and_then(|auth| auth.get("OPENAI_API_KEY"))
                 .and_then(|v| v.as_str()),
-            Some("One API-key"),
+            Some("aihubmix-key"),
             "restore should still use the hot-switched provider auth"
         );
     }

@@ -1018,14 +1018,14 @@ export const opencodeProviderPresets: OpenCodeProviderPreset[] = [
   },
 
   {
-    name: "One API",
-    websiteUrl: "https://www.oneapi.work",
-    apiKeyUrl: "https://www.oneapi.work",
+    name: "AiHubMix",
+    websiteUrl: "https://aihubmix.com",
+    apiKeyUrl: "https://aihubmix.com",
     settingsConfig: {
       npm: "@ai-sdk/anthropic",
-      name: "One API",
+      name: "AiHubMix",
       options: {
-        baseURL: "https://www.oneapi.work/v1",
+        baseURL: "https://aihubmix.com/v1",
         apiKey: "",
         setCacheKey: true,
       },
@@ -1035,7 +1035,7 @@ export const opencodeProviderPresets: OpenCodeProviderPreset[] = [
       },
     },
     category: "aggregator",
-    icon: "One API",
+    icon: "aihubmix",
     iconColor: "#006FFB",
     templateValues: {
       apiKey: {
@@ -1092,6 +1092,33 @@ export const opencodeProviderPresets: OpenCodeProviderPreset[] = [
     category: "aggregator",
     isPartner: true,
     partnerPromotionKey: "dmxapi",
+    templateValues: {
+      apiKey: {
+        label: "API Key",
+        placeholder: "",
+        editorValue: "",
+      },
+    },
+  },
+  {
+    name: "One API",
+    websiteUrl: "https://www.oneapi.work",
+    apiKeyUrl: "https://www.oneapi.work",
+    settingsConfig: {
+      npm: "@ai-sdk/anthropic",
+      name: "One API",
+      options: {
+        baseURL: "https://www.oneapi.work/v1",
+        apiKey: "",
+        setCacheKey: true,
+      },
+      models: {
+        "claude-sonnet-4-6": { name: "Claude Sonnet 4.6" },
+        "claude-opus-4-8": { name: "Claude Opus 4.8" },
+      },
+    },
+    category: "aggregator",
+    icon: "oneapi",
     templateValues: {
       apiKey: {
         label: "API Key",

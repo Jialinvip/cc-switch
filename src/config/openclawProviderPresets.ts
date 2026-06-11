@@ -931,11 +931,11 @@ export const openclawProviderPresets: OpenClawProviderPreset[] = [
 
   // ========== Aggregators ==========
   {
-    name: "One API",
-    websiteUrl: "https://www.oneapi.work",
-    apiKeyUrl: "https://www.oneapi.work",
+    name: "AiHubMix",
+    websiteUrl: "https://aihubmix.com",
+    apiKeyUrl: "https://aihubmix.com",
     settingsConfig: {
-      baseUrl: "https://www.oneapi.work",
+      baseUrl: "https://aihubmix.com",
       apiKey: "",
       api: "anthropic-messages",
       models: [
@@ -954,7 +954,7 @@ export const openclawProviderPresets: OpenClawProviderPreset[] = [
       ],
     },
     category: "aggregator",
-    icon: "One API",
+    icon: "aihubmix",
     iconColor: "#006FFB",
     templateValues: {
       apiKey: {
@@ -965,12 +965,12 @@ export const openclawProviderPresets: OpenClawProviderPreset[] = [
     },
     suggestedDefaults: {
       model: {
-        primary: "One API/claude-opus-4-8",
-        fallbacks: ["One API/claude-sonnet-4-6"],
+        primary: "aihubmix/claude-opus-4-8",
+        fallbacks: ["aihubmix/claude-sonnet-4-6"],
       },
       modelCatalog: {
-        "One API/claude-opus-4-8": { alias: "Opus" },
-        "One API/claude-sonnet-4-6": { alias: "Sonnet" },
+        "aihubmix/claude-opus-4-8": { alias: "Opus" },
+        "aihubmix/claude-sonnet-4-6": { alias: "Sonnet" },
       },
     },
   },
@@ -1056,6 +1056,49 @@ export const openclawProviderPresets: OpenClawProviderPreset[] = [
       modelCatalog: {
         "dmxapi/claude-opus-4-8": { alias: "Opus" },
         "dmxapi/claude-sonnet-4-6": { alias: "Sonnet" },
+      },
+    },
+  },
+  {
+    name: "One API",
+    websiteUrl: "https://www.oneapi.work",
+    apiKeyUrl: "https://www.oneapi.work",
+    settingsConfig: {
+      baseUrl: "https://www.oneapi.work",
+      apiKey: "",
+      api: "anthropic-messages",
+      models: [
+        {
+          id: "claude-opus-4-8",
+          name: "Claude Opus 4.8",
+          contextWindow: 1000000,
+          cost: { input: 5, output: 25 },
+        },
+        {
+          id: "claude-sonnet-4-6",
+          name: "Claude Sonnet 4.6",
+          contextWindow: 1000000,
+          cost: { input: 3, output: 15 },
+        },
+      ],
+    },
+    category: "aggregator",
+    icon: "oneapi",
+    templateValues: {
+      apiKey: {
+        label: "API Key",
+        placeholder: "",
+        editorValue: "",
+      },
+    },
+    suggestedDefaults: {
+      model: {
+        primary: "oneapi/claude-opus-4-8",
+        fallbacks: ["oneapi/claude-sonnet-4-6"],
+      },
+      modelCatalog: {
+        "oneapi/claude-opus-4-8": { alias: "Opus" },
+        "oneapi/claude-sonnet-4-6": { alias: "Sonnet" },
       },
     },
   },
