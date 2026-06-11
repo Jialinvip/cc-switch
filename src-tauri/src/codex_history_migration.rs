@@ -1186,14 +1186,14 @@ base_url = "https://proxy.example/v1"
 
         assert_eq!(changed, 0);
         let conn = Connection::open(&db_path).expect("reopen db");
-        let One API_count: i64 = conn
+        let one_api_count: i64 = conn
             .query_row(
                 "SELECT COUNT(*) FROM threads WHERE model_provider = 'One API'",
                 [],
                 |row| row.get(0),
             )
             .expect("count One API");
-        assert_eq!(One API_count, 1);
+        assert_eq!(one_api_count, 1);
         assert!(!backup_root.exists());
     }
 
