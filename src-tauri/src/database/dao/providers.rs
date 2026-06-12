@@ -650,6 +650,119 @@ impl Database {
         Ok(inserted)
     }
 
+    /// 为 claude / claude-desktop / codex / gemini 各播种一个 "One API" 供应商，
+    /// 并把它设为该应用的默认激活项（is_current）。
+    ///
+    /// 与官方种子（`init_default_official_providers`）一致地"放进每个应用已经激活的
+    /// 页面"，但额外把 One API 设为默认启用。每个数据库只执行一次，由 settings flag
+    /// `oneapi_providers_seeded` 保证幂等；用户删除后不再重建，尊重用户意图。
+    ///
+    /// settings_config 形态逐应用不同，与前端 `*ProviderPresets.ts` 的 "One API" 预设对齐：
+    /// - Claude / Claude Desktop：`env.ANTHROPIC_BASE_URL` + 空 `ANTHROPIC_AUTH_TOKEN`
+    /// - Codex：`auth.OPENAI_API_KEY` + config.toml（custom provider，responses 协议）
+    /// - Gemini：`env.GOOGLE_GEMINI_BASE_URL` + 空 `GEMINI_API_KEY`
+    pub fn init_default_oneapi_providers(&self) -> Result<usize, AppError> {
+        use crate::app_config::AppType;
+        use serde_json::json;
+
+        if self
+            .get_bool_flag("oneapi_providers_seeded")
+            .unwrap_or(false)
+        {
+            return Ok(0);
+        }
+
+        // Codex 第三方 config.toml，与 codexProviderPresets.ts 的
+        // generateThirdPartyConfig("oneapi", "https://www.oneapi.work/v1", "gpt-5.5") 一致。
+        let codex_config = r#"model_provider = "custom"
+model = "gpt-5.5"
+model_reasoning_effort = "high"
+disable_response_storage = true
+
+[model_providers.custom]
+name = "oneapi"
+base_url = "https://www.oneapi.work/v1"
+wire_api = "responses"
+requires_openai_auth = true"#;
+
+        let seeds: [(AppType, &str, serde_json::Value); 4] = [
+            (
+                AppType::Claude,
+                "claude-oneapi",
+                json!({
+                    "env": {
+                        "ANTHROPIC_BASE_URL": "https://www.oneapi.work",
+                        "ANTHROPIC_AUTH_TOKEN": ""
+                    }
+                }),
+            ),
+            (
+                AppType::ClaudeDesktop,
+                "claude-desktop-oneapi",
+                json!({
+                    "env": {
+                        "ANTHROPIC_BASE_URL": "https://www.oneapi.work",
+                        "ANTHROPIC_AUTH_TOKEN": ""
+                    }
+                }),
+            ),
+            (
+                AppType::Codex,
+                "codex-oneapi",
+                json!({ "auth": { "OPENAI_API_KEY": "" }, "config": codex_config }),
+            ),
+            (
+                AppType::Gemini,
+                "gemini-oneapi",
+                json!({
+                    "env": {
+                        "GOOGLE_GEMINI_BASE_URL": "https://www.oneapi.work",
+                        "GEMINI_API_KEY": "",
+                        "GEMINI_MODEL": "gemini-3.5-flash"
+                    },
+                    "config": {}
+                }),
+            ),
+        ];
+
+        let now_ms = chrono::Utc::now().timestamp_millis();
+        let mut inserted = 0_usize;
+
+        for (app_type, id, settings_config) in seeds {
+            let app_type_str = app_type.as_str();
+
+            // 已存在（用户曾手动用过同 id）：不覆盖配置，但仍设为默认激活项。
+            if self.get_provider_by_id(id, app_type_str)?.is_some() {
+                self.set_current_provider(app_type_str, id)?;
+                continue;
+            }
+
+            let next_sort_index = self.next_sort_index_for_app(app_type_str)?;
+
+            let mut provider = Provider::with_id(
+                id.to_string(),
+                "One API".to_string(),
+                settings_config,
+                Some("https://www.oneapi.work".to_string()),
+            );
+            provider.category = Some("aggregator".to_string());
+            provider.icon = Some("oneapi".to_string());
+            provider.sort_index = Some(next_sort_index);
+            provider.created_at = Some(now_ms);
+
+            self.save_provider(app_type_str, &provider)?;
+            // 默认启用 One API。
+            self.set_current_provider(app_type_str, id)?;
+            inserted += 1;
+            log::info!("✓ Seeded One API provider: One API ({app_type_str})");
+        }
+
+        // 即使 inserted=0 也设置 flag，防止反复检查。
+        self.set_setting("oneapi_providers_seeded", "true")?;
+
+        Ok(inserted)
+    }
+
     /// 按 id 兜底插入单条 official seed（仅当目标表中该 id 不存在时插入）。
     ///
     /// 与 `init_default_official_providers` 不同：

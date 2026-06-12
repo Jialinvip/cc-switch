@@ -560,6 +560,15 @@ pub fn run() {
                 Err(e) => log::warn!("✗ Failed to seed official providers: {e}"),
             }
 
+            // 把 One API 放进每个应用并设为默认激活项（跟官方端点一样自动出现）。
+            match app_state.db.init_default_oneapi_providers() {
+                Ok(count) if count > 0 => {
+                    log::info!("✓ Seeded {count} One API provider(s)");
+                }
+                Ok(_) => {}
+                Err(e) => log::warn!("✗ Failed to seed One API providers: {e}"),
+            }
+
             {
                 let db_for_codex_history_migration = app_state.db.clone();
                 tauri::async_runtime::spawn_blocking(move || {
