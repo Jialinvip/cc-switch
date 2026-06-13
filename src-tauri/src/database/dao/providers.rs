@@ -661,6 +661,9 @@ impl Database {
     /// - Claude / Claude Desktop：`env.ANTHROPIC_BASE_URL` + 空 `ANTHROPIC_AUTH_TOKEN`
     /// - Codex：`auth.OPENAI_API_KEY` + config.toml（custom provider，responses 协议）
     /// - Gemini：`env.GOOGLE_GEMINI_BASE_URL` + 空 `GEMINI_API_KEY`
+    /// - OpenCode：`npm` + `options.baseURL` + `models`（@ai-sdk/anthropic）
+    /// - OpenClaw：`baseUrl` + `api`(anthropic-messages) + `models[]`
+    /// - Hermes：`name`(oneapi) + `base_url` + `api_mode`(chat_completions) + `models[]`
     pub fn init_default_oneapi_providers(&self) -> Result<usize, AppError> {
         use crate::app_config::AppType;
         use serde_json::json;
@@ -685,7 +688,7 @@ base_url = "https://www.oneapi.work/v1"
 wire_api = "responses"
 requires_openai_auth = true"#;
 
-        let seeds: [(AppType, &str, serde_json::Value); 4] = [
+        let seeds: [(AppType, &str, serde_json::Value); 7] = [
             (
                 AppType::Claude,
                 "claude-oneapi",
@@ -721,6 +724,57 @@ requires_openai_auth = true"#;
                         "GEMINI_MODEL": "gemini-3.5-flash"
                     },
                     "config": {}
+                }),
+            ),
+            (
+                AppType::OpenCode,
+                "opencode-oneapi",
+                json!({
+                    "npm": "@ai-sdk/anthropic",
+                    "name": "One API",
+                    "options": {
+                        "baseURL": "https://www.oneapi.work/v1",
+                        "apiKey": "",
+                        "setCacheKey": true
+                    },
+                    "models": {
+                        "claude-sonnet-4-6": { "name": "Claude Sonnet 4.6" },
+                        "claude-opus-4-8": { "name": "Claude Opus 4.8" }
+                    }
+                }),
+            ),
+            (
+                AppType::OpenClaw,
+                "openclaw-oneapi",
+                json!({
+                    "baseUrl": "https://www.oneapi.work",
+                    "apiKey": "",
+                    "api": "anthropic-messages",
+                    "models": [
+                        {
+                            "id": "claude-opus-4-8",
+                            "name": "Claude Opus 4.8",
+                            "contextWindow": 1000000,
+                            "cost": { "input": 5, "output": 25 }
+                        },
+                        {
+                            "id": "claude-sonnet-4-6",
+                            "name": "Claude Sonnet 4.6",
+                            "contextWindow": 1000000,
+                            "cost": { "input": 3, "output": 15 }
+                        }
+                    ]
+                }),
+            ),
+            (
+                AppType::Hermes,
+                "hermes-oneapi",
+                json!({
+                    "name": "oneapi",
+                    "base_url": "https://www.oneapi.work/v1",
+                    "api_key": "",
+                    "api_mode": "chat_completions",
+                    "models": [{ "id": "gpt-5.5", "name": "GPT-5.5" }]
                 }),
             ),
         ];
