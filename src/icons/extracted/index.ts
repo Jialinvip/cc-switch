@@ -12,7 +12,6 @@ import _cherryin from "./cherryin.png";
 import _eflowcode from "./eflowcode.png";
 import _hermes from "./hermes.png";
 import _huoshan from "./huoshan.png";
-import _lemondata from "./lemondata.png";
 import _oneapi from "./oneapi.png";
 import _pateway from "./pateway.jpg";
 import _pipellm from "./pipellm.png";
@@ -107,7 +106,6 @@ export const iconUrls: Record<string, string> = {
   eflowcode: _eflowcode,
   hermes: _hermes,
   huoshan: _huoshan,
-  lemondata: _lemondata,
   oneapi: _oneapi,
   pateway: _pateway,
   pipellm: _pipellm,
