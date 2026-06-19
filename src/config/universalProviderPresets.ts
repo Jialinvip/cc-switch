@@ -60,39 +60,22 @@ const NEWAPI_DEFAULT_MODELS: UniversalProviderModels = {
  */
 export const universalProviderPresets: UniversalProviderPreset[] = [
   {
-    name: "NewAPI",
-    providerType: "newapi",
+    name: "One API",
+    providerType: "oneapi",
     defaultApps: {
       claude: true,
       codex: true,
       gemini: true,
     },
     defaultModels: NEWAPI_DEFAULT_MODELS,
-    websiteUrl: "https://www.newapi.pro",
-    icon: "newapi",
-    iconColor: "#00A67E",
+    websiteUrl: "https://www.oneapi.work",
+    icon: "oneapi",
+    iconColor: "#000000",
     description:
-      "NewAPI 是一个可自部署的 API 网关，支持 Anthropic、OpenAI、Gemini 等多种协议",
-  },
-  {
-    name: "自定义网关",
-    providerType: "custom_gateway",
-    defaultApps: {
-      claude: true,
-      codex: true,
-      gemini: true,
-    },
-    defaultModels: NEWAPI_DEFAULT_MODELS,
-    icon: "openai",
-    iconColor: "#6366F1",
-    description: "自定义配置的 API 网关",
-    isCustomTemplate: true,
+      "One API 是一个支持 Anthropic、OpenAI、Gemini 等多种协议的 API 网关",
   },
 ];
 
-/**
- * 根据预设创建统一供应商
- */
 export function createUniversalProviderFromPreset(
   preset: UniversalProviderPreset,
   id: string,
