@@ -1279,7 +1279,16 @@ function App() {
               )}
             <div
               ref={toolbarRef}
-              className="flex flex-1 min-w-0 overflow-x-hidden items-center py-4 pr-2"
+              className="toolbar-scroll flex flex-1 min-w-0 items-center py-4 pr-2"
+              // 竖向滚轮映射成横向滚动：Windows 上普通鼠标没有横向滚轮，
+              // 否则溢出的按钮只能靠拖滚动条够到。deltaX 非 0 说明是触控板
+              // 横向手势，交给浏览器原生处理。
+              onWheel={(event) => {
+                const el = event.currentTarget;
+                if (event.deltaX !== 0) return;
+                if (el.scrollWidth <= el.clientWidth) return;
+                el.scrollLeft += event.deltaY;
+              }}
             >
               <div
                 className="flex shrink-0 items-center gap-1.5 ml-auto"
