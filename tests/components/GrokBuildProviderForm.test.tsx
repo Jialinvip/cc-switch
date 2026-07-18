@@ -2,7 +2,10 @@ import { fireEvent, render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { parse as parseToml } from "smol-toml";
 import { describe, expect, it, vi } from "vitest";
-import { GrokBuildProviderForm } from "@/components/providers/forms/GrokBuildProviderForm";
+import {
+  GrokBuildProviderForm,
+  grokApiBackendFromApiFormat,
+} from "@/components/providers/forms/GrokBuildProviderForm";
 
 vi.mock("@/components/JsonEditor", () => ({
   default: ({
@@ -31,14 +34,14 @@ describe("GrokBuildProviderForm", () => {
       />,
     );
 
-    await user.click(screen.getByRole("button", { name: /PatewayAI/ }));
+    await user.click(screen.getByRole("button", { name: /One API/ }));
 
     const baseUrlInput =
       container.querySelector<HTMLInputElement>("#codexBaseUrl");
     const nameInput =
       container.querySelector<HTMLInputElement>('input[name="name"]');
-    expect(baseUrlInput?.value).toBe("https://api.pateway.ai/v1");
-    expect(nameInput?.value).toBe("PatewayAI");
+    expect(baseUrlInput?.value).toBe("https://www.oneapi.work/v1");
+    expect(nameInput?.value).toBe("One API");
   });
 
   it("submits a complete config.toml payload with Grok defaults", async () => {
@@ -85,29 +88,12 @@ describe("GrokBuildProviderForm", () => {
     });
   });
 
-  it("maps Chat Completions presets into Grok api_backend", async () => {
-    const user = userEvent.setup();
-    const onSubmit = vi.fn();
-    render(
-      <GrokBuildProviderForm
-        submitLabel="Save"
-        onSubmit={onSubmit}
-        onCancel={() => {}}
-      />,
-    );
-
-    await user.click(screen.getByRole("button", { name: /BytePlus/ }));
-    await user.type(screen.getByLabelText("API Key"), "secret-key");
-    await user.click(screen.getByRole("button", { name: "Save" }));
-
-    expect(onSubmit).toHaveBeenCalledTimes(1);
-    const submitted = onSubmit.mock.calls[0][0];
-    const settings = JSON.parse(submitted.settingsConfig);
-    const config = parseToml(settings.config) as any;
-    expect(submitted.meta.apiFormat).toBe("openai_chat");
-    expect(config.model[config.models.default].api_backend).toBe(
-      "chat_completions",
-    );
+  // Fork 定制：第三方预设（BytePlus 等）已删除，本 fork 只保留「官方 + One API」，
+  // 没有 openai_chat 形态的 Codex 预设可点。改为直接断言映射函数本身。
+  it("maps Chat Completions api format into Grok api_backend", () => {
+    expect(grokApiBackendFromApiFormat("openai_chat")).toBe("chat_completions");
+    expect(grokApiBackendFromApiFormat("anthropic")).toBe("messages");
+    expect(grokApiBackendFromApiFormat("openai_responses")).toBe("responses");
   });
 
   it("renders localized validation feedback for malformed TOML", async () => {

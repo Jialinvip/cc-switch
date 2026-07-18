@@ -155,6 +155,40 @@ cd src-tauri && cargo check && cargo test
 
 ## 同步实录
 
+### v3.17.1（2026-07-18，对应上游 v3.17.0）
+
+- **上游提交数**：160 个（v3.17.0 基线）
+- **冲突文件**：13 个
+  - 版本号 4 处（统一设为 fork 的 `3.17.1`）
+  - 预设 7 处（`universalProviderPresets.ts` 这次是 auto-merge 干净的，
+    但**仍然要检查**——上游往里加了 NewAPI/自定义网关，必须重新删掉）
+  - 图标 index 1 处（上游新增 `nekocode`，**两个都留**：oneapi + nekocode）
+  - `.github/workflows/release.yml` modify/delete → 保持删除（fork 用
+    `build-windows.yml`，`release.yml` 是上游的签名发布流程）
+  - 测试 3 处 modify/delete（`claudeProviderPresets` / `codexChatProviderPresets` /
+    `therouterProviderPresets`）→ 全部 `git rm`
+  - `therouterOpenCodeOpenClawPresets.test.ts` 内容冲突 → 取 fork 版
+- **上游新增测试**（针对新第三方厂商，需删除）：`doubaoSeedPresets.test.ts`、
+  `longcatProviderPresets.test.ts`、`subrouterProviderPresets.test.ts`
+- **上游新功能 Grok Build**：`GrokBuildProviderForm` 复用 `codexProviderPresets`
+  并过滤掉官方项——所以 fork 下它只剩 One API 一个可选预设。
+  `tests/components/GrokBuildProviderForm.test.tsx` 两处要改写：
+  - PatewayAI → One API（断言改成 `https://www.oneapi.work/v1` / `One API`）
+  - BytePlus 那条「chat_completions」用例：fork 没有 `openai_chat` 形态的 Codex
+    预设可点，改成直接单测导出的 `grokApiBackendFromApiFormat()` 映射函数
+- **`pnpm-workspace.yaml`**：`allowBuilds.msw` 之前留着占位串 `set this to true
+  or false`，会让 `pnpm install` 直接报错，改成 `false`
+- **上游接口变化**：`CodexProviderPreset` 新增 `promptCacheRouting?: PromptCacheRoutingMode`
+  （重写时保留）；`CLAUDE_DESKTOP_ROLE_ROUTE_IDS.sonnet` 改为 `claude-sonnet-5`（跟上游）
+- **验证结果**：
+  - `tsc --noEmit`：零错误
+  - `vitest`：66 个测试文件 / 428 个测试**全部通过**（含 `App.test.tsx`）
+  - 守卫测试 `onlyOfficialAndOneApiPresets.test.ts` 16 项全部通过
+  - `cargo check` / `cargo test` **本机未跑**（这台机器没装 Rust 工具链）。
+    Rust 定制 #2（providers.rs / lib.rs）auto-merge 干净，已人工确认
+    `init_default_oneapi_providers` 和 `oneapi_providers_seeded` 仍在位。
+    **发版前请在有 Rust 的机器上补跑，或依赖 CI。**
+
 ### v3.16.7（2026-06-19）
 
 - **上游提交数**：47 个（v3.16.3 基线）
