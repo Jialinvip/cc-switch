@@ -45,6 +45,12 @@ git checkout upstream/main -- src/config/claudeProviderPresets.ts \
 上游那些**有用的改动**（bug 修复、代理改进、新模型定价、新功能）跟着上游走、保留；
 **没用的**（一堆新厂商端点预设）按下面规则筛掉即可。
 
+> **注意**：上游可能**新增预设文件**（如 v3.20 新增 `grokBuildProviderPresets.ts` /
+> `piProviderPresets.ts` / `mcodeProviderPresets.ts`）。这些文件没有冲突、会随 merge
+> 干净进入 fork，**必须对照下方定制清单同样裁剪 + 补 One API**，并把新清单加进
+> `tests/config/onlyOfficialAndOneApiPresets.test.ts` 守卫。同理若上游新增
+> `src/config/*.test.ts` 同目录测试（测第三方厂商的）要删或改写。
+
 ---
 
 ## 定制清单（每次同步后重新套用这三处）
@@ -72,6 +78,9 @@ name === "One API" || isOfficial === true || category === "official"
 | openclawProviderPresets | One API（无官方预设） |
 | opencodeProviderPresets | One API（无官方预设） |
 | universalProviderPresets | One API（NewAPI、「自定义网关」都删） |
+| grokBuildProviderPresets | Grok Official · One API |
+| piProviderPresets | One API（无官方预设） |
+| mcodeProviderPresets | One API（**从 pi 派生**，勿手改数组；保证 pi 的 One API 无 compat 即可） |
 
 注意事项：
 
@@ -88,6 +97,21 @@ name === "One API" || isOfficial === true || category === "official"
   **不是预设**，必须保留。只替换 `export const opencodeProviderPresets` 数组部分。
   同理 `universalProviderPresets.ts` 末尾的 `createUniversalProviderFromPreset()` 等
   工具函数也要保留。
+- `grokBuildProviderPresets.ts` 有独立的 `grokBuildOfficialPreset` 导出（在数组外，
+  后端 `providers_seed.rs` 的 "Grok Official" 与之对应），裁剪数组即可，官方条目别动。
+  One API 条目用 `grokPresetConfig("One API", "https://www.oneapi.work/v1")` 生成。
+- `piProviderPresets.ts` 的 One API 条目给 `claude-opus-4.8` 显式
+  `thinkingProfile: "xhighAndMax"`，防止 `materializeVerifiedThinkingProfiles`
+  按绑定注入 `forceAdaptiveThinking` compat——否则 mcode 派生过滤器
+  （要求所有 model 无 compat）会把整个 One API 条目滤掉。
+- `mcodeProviderPresets.ts` 是 `piProviderPresets` 的运行时派生
+  （filter + map），**不要手改其数组**；pi 的 One API 条目 `api` 用
+  `anthropic-messages`（属 `MCODE_API_FORMATS`）即可自动流入 mcode。
+- `piModelCatalog.ts` / `piThinkingProfiles.ts` 是模型元数据/思考档位助手，
+  与 `OPENCODE_PRESET_MODEL_VARIANTS` 同类，整文件保留。
+- 新应用（Grok Build / Pi / Mcode）**尚未加 Rust One API 种子**（与 v3.17.1
+  对 Grok Build 的处理一致）；种子里 `settings_config` 形态逐应用不同，需要时
+  再单独评估。
 
 ### 2. Rust 种子（全新安装默认就是 官方 + One API、One API 默认启用）
 
@@ -154,6 +178,57 @@ cd src-tauri && cargo check && cargo test
 ---
 
 ## 同步实录
+
+### v3.20.5（2026-09-25，对应上游 v3.20.4）
+
+- **上游提交数**：360 个（v3.20.4 基线，merge 时 upstream/main 在 v3.20.4+8）
+- **冲突文件**：23 个
+  - 版本号 4 处（统一设为 fork 的 `3.20.5`）
+  - 预设 7 处 modify/modify（`universalProviderPresets.ts` 又一次 auto-merge 干净，
+    仍要检查；本次上游给它加的内容都在裁剪范围内）
+  - 其余两个内容冲突 `src/App.tsx`、`src/components/settings/AboutSection.tsx` → 跟上游
+  - `.github/workflows/release.yml` modify/delete → 保持删除
+  - 测试 7 处 modify/delete（claude/codexChat/doubao/longcat/mimo/subrouter/therouter
+    系列）→ 全部 `git rm`
+  - `therouterOpenCodeOpenClawPresets.test.ts`、`opencodeProviderPresets.test.ts`
+    取 fork 版 + gemini-3.5-flash → 3.6-flash 改名
+  - `GrokBuildProviderForm.test.tsx` 内容冲突 → 取上游版再改 PatewayAI → One API
+- **上游新增 3 个预设清单**（本表此前未覆盖，本次按「官方 + One API」一并裁剪）：
+  `grokBuildProviderPresets.ts` / `piProviderPresets.ts` / `mcodeProviderPresets.ts`
+  - grokBuild 保留 `grokBuildOfficialPreset` + 新增 One API 条目
+  - pi 只留 One API（新增，`api: "anthropic-messages"`、opus 显式
+    `thinkingProfile: "xhighAndMax"` 防 compat 注入）
+  - mcode 由 pi 派生，自动得到 One API（守卫测试覆盖）
+  - `piModelCatalog.ts` / `piThinkingProfiles.ts` 作为元数据助手整文件保留
+- **上游接口/助手保留**：`OPENCODE_PRESET_MODEL_VARIANTS`（gemini-3.5-flash 已被
+  上游客改名为 gemini-3.6-flash，断言跟着改）、`getPresetModelDefaults`、
+  `createUniversalProviderFromPreset`、codex 的 `generateThirdPartyAuth/Config`、
+  claudeDesktop 的 `passthroughRoutes` 等均保留；删掉空置的 `mappedRoutes` /
+  `brandedRoutes` / codex 本地 `modelCatalog` / `MIMO_CODEX_BASE_INSTRUCTIONS` /
+  `OPENROUTER_STYLE_GROK_MODEL` / pi 的六个 COMPAT 常量
+- **上游新增测试的处理**：
+  - 删（测已删厂商）：`jiekou`/`ppio`/`codexProviderPresets.tokenPlanTextOnly`/
+    `qianfanTokenPlan`/`tokenPlanProvider`/`xaiOauthProvider`/`piProviderPresets` 等
+    预设清单测试，及 `claudeProviderPresets`/`codexChatProviderPresets`/`therouter*`
+    等 modify/delete 冲突项
+  - 改写（fixture 从已删厂商换成 One API）：`PiProviderForm`（Kimi/DeepSeek→One API）、
+    `McodeProviderForm`（MiniMax→One API）、`ClaudeDesktopProviderForm`（PackyCode→One API）、
+    `piThinkingProfiles`（materialize/adaptive 两用例改断言 + 加 fork 不变量
+    「pi 模型不带 compat」）
+  - 裁剪：`codexReasoningLevelPresets.test.ts` 只留 canonical efforts 白名单守卫；
+    `src/config/codexProviderPresets.test.ts` 只留 `generateThirdPartyConfig` 用例
+  - `opencodeProviderPresets.test.ts` Bedrock variants 断言跟上游模型改名
+    （opus-4-8 → global.anthropic.claude-opus-5）
+- **守卫测试扩展**：`onlyOfficialAndOneApiPresets.test.ts` 从 8 组扩到 11 组
+  （加 grokbuild / pi / mcode），22 项断言全过
+- **验证结果**：
+  - `tsc --noEmit`：零错误
+  - `vitest`：126 个测试文件 / 956 个测试**全部通过**（含 `App.test.tsx`）
+  - 守卫测试 22 项全过
+  - `cargo check` / `cargo test` **本机未跑**（无 Rust 工具链）。Rust 定制 #2
+    auto-merge 干净，已人工确认 `init_default_oneapi_providers`（7 个种子齐全）
+    和 `oneapi_providers_seeded` 仍在位、调用顺序在官方种子之后。
+    **发版前请在有 Rust 的机器上补跑，或依赖 CI。**
 
 ### v3.17.1（2026-07-18，对应上游 v3.17.0）
 

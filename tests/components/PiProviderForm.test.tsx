@@ -753,7 +753,7 @@ describe("PiProviderForm", () => {
       />,
     );
 
-    fireEvent.click(screen.getByText("Kimi", { selector: "span" }));
+    fireEvent.click(screen.getByText("One API", { selector: "span" }));
     fireEvent.change(screen.getByLabelText("pi.form.credential"), {
       target: { value: "literal-key" },
     });
@@ -761,13 +761,13 @@ describe("PiProviderForm", () => {
 
     await waitFor(() => expect(onSubmit).toHaveBeenCalledTimes(1));
     expect(onSubmit.mock.calls[0][0]).toMatchObject({
-      providerKey: "cc-switch-kimi",
-      name: "Kimi",
-      presetCategory: "cn_official",
+      providerKey: "cc-switch-oneapi",
+      name: "One API",
+      presetCategory: "aggregator",
     });
     expect(JSON.parse(onSubmit.mock.calls[0][0].settingsConfig)).toMatchObject({
-      api: "openai-completions",
-      baseUrl: "https://api.moonshot.cn/v1",
+      api: "anthropic-messages",
+      baseUrl: "https://www.oneapi.work",
       apiKey: "literal-key",
     });
     expect(
@@ -786,7 +786,7 @@ describe("PiProviderForm", () => {
       />,
     );
 
-    fireEvent.click(screen.getByText("Kimi", { selector: "span" }));
+    fireEvent.click(screen.getByText("One API", { selector: "span" }));
     fireEvent.change(screen.getByLabelText("pi.form.credential"), {
       target: { value: "literal-key" },
     });
@@ -799,10 +799,8 @@ describe("PiProviderForm", () => {
     const submitted = onSubmit.mock.calls[0][0];
     const config = JSON.parse(submitted.settingsConfig);
     expect(config.models.map((model: { id: string }) => model.id)).toEqual([
-      "kimi-k2.7-code",
-      "kimi-k3",
-      "kimi-k2.7-code-highspeed",
-      "kimi-k2.6",
+      "claude-sonnet-4-6",
+      "claude-opus-4-8",
     ]);
     expect(
       config.models.map((model: { id: string; name?: string }) => ({
@@ -810,10 +808,8 @@ describe("PiProviderForm", () => {
         name: model.name,
       })),
     ).toEqual([
-      { id: "kimi-k2.7-code", name: "Kimi K2.7 Code" },
-      { id: "kimi-k3", name: "Kimi K3" },
-      { id: "kimi-k2.7-code-highspeed", name: "Kimi K2.7 Code HighSpeed" },
-      { id: "kimi-k2.6", name: "Kimi K2.6" },
+      { id: "claude-sonnet-4-6", name: "Claude Sonnet 4.6" },
+      { id: "claude-opus-4-8", name: "Claude Opus 4.8" },
     ]);
     for (const model of config.models) {
       expect(model).toMatchObject({
@@ -913,7 +909,7 @@ describe("PiProviderForm", () => {
       />,
     );
 
-    fireEvent.click(screen.getByText("Kimi", { selector: "span" }));
+    fireEvent.click(screen.getByText("One API", { selector: "span" }));
     fireEvent.click(
       screen.getByRole("button", { name: "Save invalid preset" }),
     );
@@ -1319,20 +1315,26 @@ describe("PiProviderForm", () => {
       />,
     );
 
-    await user.click(screen.getByText("Kimi", { selector: "span" }));
+    await user.click(screen.getByText("One API", { selector: "span" }));
     const configEditor = screen.getByLabelText(
       "provider.configJson",
     ) as HTMLTextAreaElement;
-    expect(JSON.parse(configEditor.value).models[0].thinkingLevelMap).toEqual({
-      off: null,
+    const opusThinkingMap = () =>
+      JSON.parse(configEditor.value).models.find(
+        (model: { id: string }) => model.id === "claude-opus-4-8",
+      ).thinkingLevelMap;
+    expect(opusThinkingMap()).toEqual({
+      xhigh: "xhigh",
+      max: "max",
     });
 
     await user.click(document.querySelector("#pi-provider-api-select")!);
     await user.click(
       await screen.findByRole("option", { name: "OpenAI Responses" }),
     );
-    expect(JSON.parse(configEditor.value).models[0].thinkingLevelMap).toEqual({
-      off: null,
+    expect(opusThinkingMap()).toEqual({
+      xhigh: "xhigh",
+      max: "max",
     });
 
     await user.click(document.querySelector("#pi-provider-api-select")!);
@@ -1341,8 +1343,9 @@ describe("PiProviderForm", () => {
         name: "OpenAI Chat Completions",
       }),
     );
-    expect(JSON.parse(configEditor.value).models[0].thinkingLevelMap).toEqual({
-      off: null,
+    expect(opusThinkingMap()).toEqual({
+      xhigh: "xhigh",
+      max: "max",
     });
   });
 
@@ -1435,24 +1438,21 @@ describe("PiProviderForm", () => {
       />,
     );
 
-    await user.click(screen.getByText("DeepSeek", { selector: "span" }));
+    await user.click(screen.getByText("One API", { selector: "span" }));
     await user.click(
       screen.getAllByRole("button", {
         name: "展开或收起模型详情",
-      })[0],
+      })[1],
     );
 
     const configEditor = screen.getByLabelText(
       "provider.configJson",
     ) as HTMLTextAreaElement;
     const automaticMap = {
-      minimal: null,
-      low: null,
-      medium: null,
-      high: "high",
+      xhigh: "xhigh",
       max: "max",
     };
-    expect(JSON.parse(configEditor.value).models[0].thinkingLevelMap).toEqual(
+    expect(JSON.parse(configEditor.value).models[1].thinkingLevelMap).toEqual(
       automaticMap,
     );
 
@@ -1475,7 +1475,7 @@ describe("PiProviderForm", () => {
         name: "pi.form.restoreModelAutofill",
       }),
     ).not.toBeInTheDocument();
-    expect(JSON.parse(configEditor.value).models[0].thinkingLevelMap).toEqual({
+    expect(JSON.parse(configEditor.value).models[1].thinkingLevelMap).toEqual({
       ...automaticMap,
       high: null,
     });
@@ -1594,7 +1594,7 @@ describe("PiProviderForm", () => {
       />,
     );
 
-    await user.click(screen.getByText("Kimi", { selector: "span" }));
+    await user.click(screen.getByText("One API", { selector: "span" }));
     const configEditor = screen.getByLabelText(
       "provider.configJson",
     ) as HTMLTextAreaElement;

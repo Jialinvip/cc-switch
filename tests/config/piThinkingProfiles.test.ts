@@ -69,26 +69,13 @@ describe("Pi thinking profiles", () => {
       }
     }
 
+    // fork 裁剪后 pi 预设只剩 One API（显式 thinkingProfile 走
+    // getPiThinkingProfile，避免绑定注入 compat 影响 mcode 派生）。
     expect(materialized).toEqual(
       expect.arrayContaining([
         expect.objectContaining({
-          preset: "Kimi",
-          modelId: "kimi-k2.7-code",
-          profileId: "offUnsupported",
-        }),
-        expect.objectContaining({
-          preset: "DeepSeek",
-          modelId: "deepseek-v4-pro",
-          profileId: "deepseekV4",
-        }),
-        expect.objectContaining({
-          preset: "OpenCode Go",
-          modelId: "glm-5.2",
-          profileId: "openCodeGoGlm52",
-        }),
-        expect.objectContaining({
-          preset: "AWS Bedrock",
-          modelId: "global.anthropic.claude-opus-5",
+          preset: "One API",
+          modelId: "claude-opus-4-8",
           profileId: "xhighAndMax",
         }),
       ]),
@@ -106,19 +93,24 @@ describe("Pi thinking profiles", () => {
   });
 
   it("pairs Anthropic adaptive maps with Pi's required compatibility flag", () => {
-    const adaptiveModels = piProviderPresets.flatMap((preset) =>
-      preset.settingsConfig.api === "anthropic-messages"
-        ? preset.settingsConfig.models.filter(
-            (model) =>
-              model.compat?.forceAdaptiveThinking === true &&
-              Object.keys(model.thinkingLevelMap ?? {}).length > 0,
-          )
-        : [],
+    // 绑定层：声明 forceAdaptiveThinking 的绑定必须能解析出非空 map + compat。
+    const adaptiveBindings = piThinkingBindings.filter(
+      (binding) => binding.modelCompat?.forceAdaptiveThinking === true,
     );
+    expect(adaptiveBindings.length).toBeGreaterThan(0);
+    for (const binding of adaptiveBindings) {
+      const resolved = resolvePiThinkingProfile(binding);
+      expect(resolved?.modelCompat).toMatchObject({
+        forceAdaptiveThinking: true,
+      });
+      expect(Object.keys(resolved?.map ?? {}).length).toBeGreaterThan(0);
+    }
 
-    expect(adaptiveModels.length).toBeGreaterThan(0);
-    for (const model of adaptiveModels) {
-      expect(model.compat).toMatchObject({ forceAdaptiveThinking: true });
+    // fork 不变量：pi 预设模型不带 compat（mcode 派生过滤器要求无 compat）。
+    for (const preset of piProviderPresets) {
+      for (const model of preset.settingsConfig.models) {
+        expect(model.compat, preset.name).toBeUndefined();
+      }
     }
   });
 

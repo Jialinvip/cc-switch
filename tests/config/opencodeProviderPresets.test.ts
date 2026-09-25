@@ -19,7 +19,7 @@ describe("OpenCode preset model metadata", () => {
     expect(variants.length).toBeGreaterThan(0);
 
     const opusModel = variants.find((v) =>
-      v.id.includes("anthropic.claude-opus-4-8"),
+      v.id.includes("claude-opus-5"),
     );
     expect(opusModel).toBeDefined();
   });

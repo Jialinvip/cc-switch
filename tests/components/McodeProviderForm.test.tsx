@@ -102,17 +102,18 @@ describe("McodeProviderForm", () => {
         onCancel={() => {}}
       />,
     );
-    fireEvent.click(screen.getByRole("button", { name: /Minimax MiniMax$/ }));
+    fireEvent.click(screen.getByRole("button", { name: /One API/ }));
     fireEvent.change(screen.getByLabelText("API Key"), {
       target: { value: "test-key" },
     });
     fireEvent.click(screen.getByRole("button", { name: "Save" }));
     await waitFor(() => expect(submit).toHaveBeenCalledOnce());
     const saved = JSON.parse(submit.mock.calls[0][0].settingsConfig);
-    expect(saved.api).toBe("openai-completions");
+    expect(saved.api).toBe("anthropic-messages");
     expect(saved.options.apiKey).toBe("test-key");
     expect(saved).not.toHaveProperty("npm");
-    expect(saved.models).toHaveProperty("MiniMax-M3");
+    expect(saved.models).toHaveProperty("claude-sonnet-4-6");
+    expect(saved.models).toHaveProperty("claude-opus-4-8");
   });
 
   it("keeps invalid JSON drafts from breaking the structured fields", () => {
@@ -135,15 +136,17 @@ describe("McodeProviderForm", () => {
     expect(screen.getByRole("button", { name: "Save" })).toBeEnabled();
   });
 
-  it("borrows the MiniMax preset without changing Pi or copying Pi compatibility fields", () => {
-    const pi = piProviderPresets.find((preset) => preset.name === "MiniMax")!;
+  it("borrows the One API preset without changing Pi or copying Pi compatibility fields", () => {
+    const pi = piProviderPresets.find((preset) => preset.name === "One API")!;
     const mcode = mcodeProviderPresets.find(
-      (preset) => preset.name === "MiniMax",
+      (preset) => preset.name === "One API",
     )!;
     expect(mcode.settingsConfig.options.baseURL).toBe(
       pi.settingsConfig.baseUrl,
     );
-    expect(Object.keys(mcode.settingsConfig.models)).toContain("MiniMax-M3");
+    expect(Object.keys(mcode.settingsConfig.models)).toContain(
+      "claude-sonnet-4-6",
+    );
     expect(mcode.settingsConfig).not.toHaveProperty("compat");
     expect(pi.settingsConfig.models).toBeInstanceOf(Array);
     expect(
