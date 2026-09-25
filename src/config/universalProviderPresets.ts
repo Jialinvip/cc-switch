@@ -44,14 +44,14 @@ const NEWAPI_DEFAULT_MODELS: UniversalProviderModels = {
     model: "claude-sonnet-5",
     haikuModel: "claude-haiku-4-5-20251001",
     sonnetModel: "claude-sonnet-5",
-    opusModel: "claude-opus-4-8",
+    opusModel: "claude-opus-5",
   },
   codex: {
-    model: "gpt-5.5",
+    model: "gpt-5.6-sol",
     reasoningEffort: "high",
   },
   gemini: {
-    model: "gemini-3.5-flash",
+    model: "gemini-3.6-flash",
   },
 };
 
@@ -60,19 +60,33 @@ const NEWAPI_DEFAULT_MODELS: UniversalProviderModels = {
  */
 export const universalProviderPresets: UniversalProviderPreset[] = [
   {
-    name: "One API",
-    providerType: "oneapi",
+    name: "NewAPI",
+    providerType: "newapi",
     defaultApps: {
       claude: true,
       codex: true,
       gemini: true,
     },
     defaultModels: NEWAPI_DEFAULT_MODELS,
-    websiteUrl: "https://www.oneapi.work",
-    icon: "oneapi",
-    iconColor: "#000000",
+    websiteUrl: "https://www.newapi.pro",
+    icon: "newapi",
+    iconColor: "#00A67E",
     description:
-      "One API 是一个支持 Anthropic、OpenAI、Gemini 等多种协议的 API 网关",
+      "NewAPI 是一个可自部署的 API 网关，支持 Anthropic、OpenAI、Gemini 等多种协议",
+  },
+  {
+    name: "自定义网关",
+    providerType: "custom_gateway",
+    defaultApps: {
+      claude: true,
+      codex: true,
+      gemini: true,
+    },
+    defaultModels: NEWAPI_DEFAULT_MODELS,
+    icon: "openai",
+    iconColor: "#6366F1",
+    description: "自定义配置的 API 网关",
+    isCustomTemplate: true,
   },
 ];
 
