@@ -20,13 +20,11 @@ mod init_status;
 mod lightweight;
 #[cfg(target_os = "linux")]
 mod linux_fix;
-mod mcode_config;
 mod mcp;
 mod model_capabilities;
 mod openclaw_config;
 mod opencode_config;
 mod panic_hook;
-mod pi_config;
 mod prompt;
 mod prompt_files;
 mod provider;
@@ -889,13 +887,6 @@ pub fn run() {
                 Ok(_) => log::debug!("○ No Hermes provider changes from live config"),
                 Err(e) => log::warn!("✗ Failed to import Hermes providers: {e}"),
             }
-            match crate::services::provider::import_pi_providers_from_live(&app_state) {
-                Ok(count) if count > 0 => {
-                    log::info!("✓ Synced {count} Pi provider(s) from native config");
-                }
-                Ok(_) => log::debug!("○ No Pi provider changes from native config"),
-                Err(e) => log::warn!("✗ Failed to import Pi providers: {e}"),
-            }
 
             // 2. OMO 配置导入（当数据库中无 OMO provider 时，从本地文件导入）
             {
@@ -1013,8 +1004,6 @@ pub fn run() {
                     crate::app_config::AppType::OpenCode,
                     crate::app_config::AppType::OpenClaw,
                     crate::app_config::AppType::Hermes,
-                    crate::app_config::AppType::Pi,
-                    crate::app_config::AppType::Mcode,
                 ] {
                     match crate::services::prompt::PromptService::import_from_file_on_first_launch(
                         &app_state,
@@ -1487,16 +1476,6 @@ pub fn run() {
             commands::enable_prompt,
             commands::import_prompt_from_file,
             commands::get_current_prompt_file_content,
-            commands::get_pi_prompt_file,
-            commands::replace_pi_prompt_file,
-            commands::delete_pi_prompt_file,
-            commands::list_pi_prompt_templates,
-            commands::upsert_pi_prompt_template,
-            commands::delete_pi_prompt_template,
-            // Pi native provider and session views
-            commands::get_pi_current_state,
-            commands::update_pi_provider_usage_script,
-            commands::get_pi_session_discovery,
             // Profile management (项目配置方案)
             commands::list_profiles,
             commands::create_profile,

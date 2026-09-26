@@ -19,7 +19,7 @@ requires_openai_auth = true`;
 
 describe("detectCodingPlanProvider (OpenCode Go)", () => {
   it("matches both base variants across apps", () => {
-    // claude/claude-desktop 预设是 /zen/go，codex/opencode/pi 是 /zen/go/v1
+    // claude/claude-desktop 预设是 /zen/go，codex/opencode 是 /zen/go/v1
     expect(detectCodingPlanProvider("https://opencode.ai/zen/go")).toBe(
       "opencode_go",
     );
@@ -73,15 +73,10 @@ describe("extractBaseUrlForUsageDetection", () => {
     ).toBe("https://opencode.ai/zen/go/v1");
   });
 
-  it("reads options.baseURL for opencode and baseUrl for pi", () => {
+  it("reads options.baseURL for opencode", () => {
     expect(
       extractBaseUrlForUsageDetection("opencode", {
         options: { baseURL: "https://opencode.ai/zen/go/v1" },
-      }),
-    ).toBe("https://opencode.ai/zen/go/v1");
-    expect(
-      extractBaseUrlForUsageDetection("pi", {
-        baseUrl: "https://opencode.ai/zen/go/v1",
       }),
     ).toBe("https://opencode.ai/zen/go/v1");
   });
@@ -136,11 +131,6 @@ describe("injectCodingPlanUsageScript", () => {
         settingsConfig: {
           options: { baseURL: "https://opencode.ai/zen/go/v1" },
         },
-      }),
-    );
-    expectInjected(
-      inject("pi", {
-        settingsConfig: { baseUrl: "https://opencode.ai/zen/go/v1" },
       }),
     );
   });

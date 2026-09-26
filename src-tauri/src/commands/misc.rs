@@ -3763,7 +3763,6 @@ fn wsl_distro_for_tool(tool: &str) -> Option<String> {
         "opencode" => crate::settings::get_opencode_override_dir(),
         "openclaw" => crate::settings::get_openclaw_override_dir(),
         "hermes" => crate::settings::get_hermes_override_dir(),
-        "pi" => crate::settings::get_pi_override_dir(),
         _ => None,
     }?;
 

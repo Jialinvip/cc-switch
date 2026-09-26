@@ -9,7 +9,7 @@ use indexmap::IndexMap;
 use rusqlite::{params, OptionalExtension, Row};
 
 const MCP_SERVER_SELECT: &str =
-    "SELECT id, name, server_config, description, homepage, docs, tags, enabled_claude, enabled_codex, enabled_gemini, enabled_grokbuild, enabled_opencode, enabled_hermes, enabled_mcode FROM mcp_servers";
+    "SELECT id, name, server_config, description, homepage, docs, tags, enabled_claude, enabled_codex, enabled_gemini, enabled_grokbuild, enabled_opencode, enabled_hermes FROM mcp_servers";
 
 fn row_to_mcp_server(row: &Row<'_>) -> rusqlite::Result<(String, McpServer)> {
     let id: String = row.get(0)?;
@@ -42,7 +42,6 @@ fn row_to_mcp_server(row: &Row<'_>) -> rusqlite::Result<(String, McpServer)> {
                 grokbuild: enabled_grokbuild,
                 opencode: enabled_opencode,
                 hermes: enabled_hermes,
-                mcode: row.get(13)?,
             },
             description,
             homepage,
@@ -92,8 +91,7 @@ impl Database {
             AppType::OpenCode => Some("enabled_opencode"),
             AppType::Hermes => Some("enabled_hermes"),
             // These applications intentionally have no MCP flag in the SSOT.
-            AppType::Mcode => Some("enabled_mcode"),
-            AppType::ClaudeDesktop | AppType::OpenClaw | AppType::Pi => None,
+            AppType::ClaudeDesktop | AppType::OpenClaw => None,
         };
 
         if let Some(column) = column {
@@ -122,8 +120,8 @@ impl Database {
         conn.execute(
             "INSERT OR REPLACE INTO mcp_servers (
                 id, name, server_config, description, homepage, docs, tags,
-                enabled_claude, enabled_codex, enabled_gemini, enabled_grokbuild, enabled_opencode, enabled_hermes, enabled_mcode
-            ) VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11, ?12, ?13, ?14)",
+                enabled_claude, enabled_codex, enabled_gemini, enabled_grokbuild, enabled_opencode, enabled_hermes
+            ) VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11, ?12, ?13)",
             params![
                 server.id,
                 server.name,
@@ -141,7 +139,6 @@ impl Database {
                 server.apps.grokbuild,
                 server.apps.opencode,
                 server.apps.hermes,
-                server.apps.mcode,
             ],
         )
         .map_err(|e| AppError::Database(e.to_string()))?;
@@ -260,7 +257,7 @@ mod tests {
         let original = test_server();
         db.save_mcp_server(&original).expect("seed server");
 
-        for app in [AppType::ClaudeDesktop, AppType::OpenClaw, AppType::Pi] {
+        for app in [AppType::ClaudeDesktop, AppType::OpenClaw] {
             let returned = db
                 .update_mcp_server_app_enabled("shared-server", &app, true)
                 .expect("toggle unsupported app")

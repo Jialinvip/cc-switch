@@ -384,11 +384,6 @@ pub fn atomic_write(path: &Path, data: &[u8]) -> Result<(), AppError> {
     atomic_write_with_unix_mode(path, data, None)
 }
 
-/// 原子写入包含凭据的文件。Unix 上新文件和替换文件始终使用 0600。
-pub fn atomic_write_private(path: &Path, data: &[u8]) -> Result<(), AppError> {
-    atomic_write_with_unix_mode(path, data, Some(0o600))
-}
-
 fn atomic_write_with_unix_mode(
     path: &Path,
     data: &[u8],

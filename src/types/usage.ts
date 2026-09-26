@@ -219,14 +219,6 @@ export const CACHE_INCLUSIVE_APP_TYPES: ReadonlySet<string> = new Set([
   "grokbuild",
 ]);
 
-// Pi sessions can mix Anthropic and OpenAI APIs, but the dashboard aggregates
-// only by app type. Treat cache-write coverage as partial without changing
-// Pi's fresh-input token semantics.
-const PARTIAL_CACHE_WRITE_APP_TYPES: ReadonlySet<string> = new Set([
-  "pi",
-  "mcode",
-]);
-
 export type CacheWriteAvailability = "ok" | "partial" | "na";
 
 export function getCacheWriteAvailability(
@@ -237,10 +229,7 @@ export function getCacheWriteAvailability(
     CACHE_INCLUSIVE_APP_TYPES.has(appType),
   ).length;
   if (unavailable === appTypes.length) return "na";
-  const partial = appTypes.some((appType) =>
-    PARTIAL_CACHE_WRITE_APP_TYPES.has(appType),
-  );
-  return unavailable === 0 && !partial ? "ok" : "partial";
+  return unavailable === 0 ? "ok" : "partial";
 }
 
 /** Subset of request-log fields needed to derive cache-normalized input. */

@@ -25,15 +25,7 @@ impl McpService {
             .map(|s| s.apps.clone())
             .unwrap_or_default();
 
-        if server.apps.mcode || prev_apps.mcode {
-            mcp::mcode::sync_and_commit(
-                &server.id,
-                server.apps.mcode.then_some(&server.server),
-                || state.db.save_mcp_server(&server),
-            )?;
-        } else {
-            state.db.save_mcp_server(&server)?;
-        }
+        state.db.save_mcp_server(&server)?;
 
         // 处理禁用：若旧版本启用但新版本取消，则需要从该应用的 live 配置移除
         if prev_apps.claude && !server.apps.claude {
@@ -66,11 +58,7 @@ impl McpService {
         let server = state.db.get_all_mcp_servers()?.shift_remove(id);
 
         if let Some(server) = server {
-            if server.apps.mcode {
-                mcp::mcode::sync_and_commit(id, None, || state.db.delete_mcp_server(id))?;
-            } else {
-                state.db.delete_mcp_server(id)?;
-            }
+            state.db.delete_mcp_server(id)?;
 
             // 从所有应用的 live 配置中移除
             Self::remove_server_from_all_apps(state, id, &server)?;
@@ -87,16 +75,6 @@ impl McpService {
         app: AppType,
         enabled: bool,
     ) -> Result<(), AppError> {
-        if app == AppType::Mcode {
-            if let Some(server) = state.db.get_all_mcp_servers()?.get(server_id) {
-                mcp::mcode::sync_and_commit(server_id, enabled.then_some(&server.server), || {
-                    state
-                        .db
-                        .update_mcp_server_app_enabled(server_id, &app, enabled)
-                })?;
-            }
-            return Ok(());
-        }
         if let Some(server) = state
             .db
             .update_mcp_server_app_enabled(server_id, &app, enabled)?
@@ -115,9 +93,6 @@ impl McpService {
     /// 将 MCP 服务器同步到所有启用的应用
     fn sync_server_to_apps(_state: &AppState, server: &McpServer) -> Result<(), AppError> {
         for app in server.apps.enabled_apps() {
-            if app == AppType::Mcode {
-                continue; // Already written before saving the managed state.
-            }
             Self::sync_server_to_app_no_config(server, &app)?;
         }
 
@@ -170,8 +145,6 @@ impl McpService {
             AppType::Hermes => {
                 mcp::sync_single_server_to_hermes(&Default::default(), &server.id, &server.server)?;
             }
-            AppType::Mcode => mcp::mcode::sync(&server.id, Some(&server.server))?,
-            AppType::Pi => {}
         }
         Ok(())
     }
@@ -184,9 +157,6 @@ impl McpService {
     ) -> Result<(), AppError> {
         // 从所有曾启用的应用中移除
         for app in server.apps.enabled_apps() {
-            if app == AppType::Mcode {
-                continue; // Already removed before deleting the managed record.
-            }
             Self::remove_server_from_app(state, id, &app)?;
         }
         Ok(())
@@ -211,8 +181,6 @@ impl McpService {
             AppType::Hermes => {
                 mcp::remove_server_from_hermes(id)?;
             }
-            AppType::Mcode => mcp::mcode::sync(id, None)?,
-            AppType::Pi => {}
         }
         Ok(())
     }
@@ -257,21 +225,16 @@ impl McpService {
         servers: &IndexMap<String, McpServer>,
         app: &AppType,
     ) -> Result<(), AppError> {
-        if matches!(
-            app,
-            AppType::OpenClaw | AppType::ClaudeDesktop | AppType::Pi
-        ) {
+        if matches!(app, AppType::OpenClaw | AppType::ClaudeDesktop) {
             return Ok(());
         }
 
         for server in servers.values() {
             if server.apps.is_enabled_for(app) {
                 Self::sync_server_to_app(state, server, app)?;
-            } else if !matches!(app, AppType::Mcode) {
+            } else {
                 Self::remove_server_from_app(state, &server.id, app)?;
             }
-            // MCode's false flag also covers pre-existing, unmanaged servers.
-            // Only explicit disable/delete operations may remove those entries.
         }
 
         Ok(())
@@ -551,14 +514,13 @@ impl McpService {
         let mut total = 0;
         let mut failures: Vec<String> = Vec::new();
 
-        let results: [(&str, Result<usize, AppError>); 7] = [
+        let results: [(&str, Result<usize, AppError>); 6] = [
             ("claude", Self::import_from_claude(state)),
             ("codex", Self::import_from_codex(state)),
             ("gemini", Self::import_from_gemini(state)),
             ("grokbuild", Self::import_from_grokbuild(state)),
             ("opencode", Self::import_from_opencode(state)),
             ("hermes", Self::import_from_hermes(state)),
-            ("mcode", mcp::mcode::import(state)),
         ];
         for (app, result) in results {
             match result {

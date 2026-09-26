@@ -184,7 +184,7 @@ cd src-tauri && cargo check && cargo test
 
 ## 同步实录
 
-### v3.20.5+（2026-09-26）删除 Pi / MiniMax Code 应用标签
+### v3.20.5+（2026-09-26）删除 Pi / MiniMax Code 应用（前端 + Rust 全量剥离）
 
 - **动机**：应用切换器只保留现有 8 个标签；Pi 与 MiniMax Code 是上游 v3.20.x
   新增的受管应用，本 fork 不接入。**后续同步上游时也不要再新增应用标签。**
@@ -198,15 +198,33 @@ cd src-tauri && cargo check && cargo test
     `lib/api/pi.ts` / `lib/query/pi.ts` 及对应测试
   - 共享文件去掉 pi/mcode 分支：`App.tsx`、`ProviderForm`、`ProviderList`、
     `Add/EditProviderDialog`、`mutations.ts`、`UnifiedSkillsPanel`、`PromptPanel` 等
-- **Rust**：为保持编译兼容与数据库行可反序列化，**暂保留** `AppType::Pi` /
-  `AppType::Mcode` 枚举变体与既有 match 臂（含 `pi_config`/`mcode_config` 等
-  专属模块）。前端已不再产生 `pi`/`mcode` 的 `AppId`，UI 上两个标签已消失。
-  若日后上游继续膨胀这两套后端，可再做一次 Rust 侧彻底剥离。
+- **Rust 彻底剥离**（2026-09-26 晚补齐，此前仅前端）：
+  - 专属文件整删：`pi_config/`、`mcode_config.rs`、`commands/pi.rs`、`mcp/mcode.rs`、
+    `services/pi_prompt_files.rs`、`services/pi_state.rs`、`services/session_usage_pi.rs`、
+    `services/session_usage_mcode.rs`、`services/provider/pi.rs`、
+    `session_manager/providers/pi.rs`、`session_manager/providers/mcode.rs`、
+    `tests/mcode_commands.rs`，并同步删除对应 `mod` 声明
+  - 共享文件去掉 pi/mcode：`AppType` 枚举（`Pi`/`Mcode` 变体及 `as_str` / `all()` /
+    `FromStr` / `is_additive_mode`）、`SkillApps` / `McpApps` / `CommonConfigSnippets`
+    字段、`skill.rs` / `settings.rs` / `provider/*` / `prompt*.rs` /
+    `session_manager/mod.rs` / `stream_check.rs` / deeplink 等所有 match 臂与测试
+  - `tests/mcp_commands.rs` 只删 3 个 `mcode_*` 测试与 `McpApps` 的 `mcode` 字段字面量，
+    其余 23 个 claude/codex/gemini/grokbuild 测试原样保留（一度被整文件裁空，已还原）
+  - **保留**：`usage_stats` 里 `'_pi_session'` → `Pi (Session)` 的历史数据标签映射
+    （本机数据库老行仍会读到）、`commands/misc.rs` 工具管理里的 `pi` CLI 工具项
+    （工具安装功能，与受管应用标签无关）
 - **不删**：MiniMax **厂商**相关（`codingPlanProviders` 的 minimax、定价
   `minimax-m*`、`minimax` 图标、模型目录条目）——那是 API 供应商，不是
   MiniMax Code 应用。其它应用代码一概不动。
-- **验证**：`tsc --noEmit` 零错误；`pnpm test:unit` **118 个测试文件 / 841 个测试全部通过**
-  （Rust 本机无 cargo，靠 CI）。
+- **验证**：
+  - 前端：`tsc --noEmit` 零错误；`pnpm test:unit` **118 个测试文件 / 841 个测试全部通过**；
+    `pnpm format:check` 通过。
+  - Rust：`cargo fmt --check`、`cargo check --all-targets`、`cargo clippy -- -D warnings`、
+    `cargo test` 本机全绿——lib 2794 通过 / 0 失败（另有 6 个 ignored），集成测试
+    （含还原后的 `mcp_commands` 23 个）全部通过。过程中本机 Rust 工具链一度被
+    清掉（`~/.cargo` 消失），已用 `rustup-init -y --profile minimal` 重装
+    （stable 1.98.1 + 项目 pinned 1.95）后补跑完成。
+
 
 ### v3.20.5（2026-09-25，对应上游 v3.20.4）
 
