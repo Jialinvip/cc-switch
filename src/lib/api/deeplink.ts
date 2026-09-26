@@ -14,8 +14,8 @@ export interface DeepLinkImportRequest {
     | "grokbuild"
     | "opencode"
     | "openclaw"
-    | "hermes"
-    | "pi";
+    | "hermes";
+
   name?: string;
   enabled?: boolean;
 

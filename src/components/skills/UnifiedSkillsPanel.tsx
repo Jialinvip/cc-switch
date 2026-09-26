@@ -49,7 +49,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 
-const IMPORT_SKILLS_APP_IDS = SKILLS_APP_IDS.filter((app) => app !== "pi");
+const IMPORT_SKILLS_APP_IDS = SKILLS_APP_IDS;
 
 interface UnifiedSkillsPanelProps {
   onOpenDiscovery: () => void;
@@ -129,8 +129,7 @@ const UnifiedSkillsPanel = React.forwardRef<
   } = useCheckSkillUpdates();
   const updateSkillMutation = useUpdateSkill();
   const [isUpdatingAll, setIsUpdatingAll] = useState(false);
-  const visibleSkillAppIds =
-    currentApp === "pi" ? SKILLS_APP_IDS : IMPORT_SKILLS_APP_IDS;
+  const visibleSkillAppIds = SKILLS_APP_IDS;
 
   const mutationPending =
     deleteBackupMutation.isPending ||
@@ -221,8 +220,6 @@ const UnifiedSkillsPanel = React.forwardRef<
       opencode: 0,
       openclaw: 0,
       hermes: 0,
-      pi: 0,
-      mcode: 0,
     };
     if (!skills) return counts;
     skills.forEach((skill) => {
@@ -327,31 +324,12 @@ const UnifiedSkillsPanel = React.forwardRef<
         try {
           const result = await uninstallMutation.mutateAsync(skill.id);
           setConfirmDialog(null);
-          const piCleanupIncomplete =
-            result.piCleanupIncomplete || Boolean(result.preservedPiPath);
-          const toastOptions = {
-            description: result.preservedPiPath
-              ? t("skills.uninstallPiPreserved", {
-                  path: result.preservedPiPath,
-                })
-              : result.piCleanupIncomplete
-                ? t("skills.uninstallPiCleanupIncomplete")
-                : result.backupPath
-                  ? t("skills.backup.location", { path: result.backupPath })
-                  : undefined,
+          toast.success(t("skills.uninstallSuccess", { name: skill.name }), {
+            description: result.backupPath
+              ? t("skills.backup.location", { path: result.backupPath })
+              : undefined,
             closeButton: true,
-          };
-          if (piCleanupIncomplete) {
-            toast.warning(
-              t("skills.uninstallSuccess", { name: skill.name }),
-              toastOptions,
-            );
-          } else {
-            toast.success(
-              t("skills.uninstallSuccess", { name: skill.name }),
-              toastOptions,
-            );
-          }
+          });
         } catch (error) {
           toast.error(t("common.error"), { description: String(error) });
         } finally {
@@ -1049,8 +1027,6 @@ const ImportSkillsDialog: React.FC<ImportSkillsDialogProps> = ({
           opencode: skill.foundIn.includes("opencode"),
           openclaw: false,
           hermes: skill.foundIn.includes("hermes"),
-          pi: false,
-          mcode: skill.foundIn.includes("mcode"),
         },
       ]),
     ),
@@ -1078,8 +1054,7 @@ const ImportSkillsDialog: React.FC<ImportSkillsDialogProps> = ({
           opencode: false,
           openclaw: false,
           hermes: false,
-          pi: false,
-          mcode: false,
+
         },
       })),
     );

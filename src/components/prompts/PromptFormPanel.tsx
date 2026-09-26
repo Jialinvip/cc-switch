@@ -34,8 +34,6 @@ const PromptFormPanel: React.FC<PromptFormPanelProps> = ({
     opencode: "AGENTS.md",
     openclaw: "AGENTS.md",
     hermes: "SOUL.md",
-    pi: "AGENTS.md",
-    mcode: "~/.minimax/AGENTS.md",
   };
   const filename = filenameMap[appId];
   const [name, setName] = useState("");
@@ -67,7 +65,7 @@ const PromptFormPanel: React.FC<PromptFormPanelProps> = ({
         id,
         name: name.trim(),
         description: description.trim() || undefined,
-        content: appId === "pi" ? content : content.trim(),
+        content: content.trim(),
         enabled: initialData?.enabled || false,
         createdAt: initialData?.createdAt || timestamp,
         updatedAt: timestamp,

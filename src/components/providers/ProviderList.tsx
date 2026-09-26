@@ -47,7 +47,6 @@ import { useCallback } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { isTextEditableTarget } from "@/utils/domUtils";
-import { usePiCurrentState } from "@/lib/query/pi";
 import { isProxyAppId } from "@/config/appConfig";
 
 interface ProviderListProps {
@@ -121,8 +120,6 @@ export function ProviderList({
   // 判断供应商是否已添加到配置（累加模式应用：OpenCode/OpenClaw/Hermes）
   const isProviderInConfig = useCallback(
     (providerId: string): boolean => {
-      if (appId === "mcode")
-        return providers[providerId]?.meta?.liveConfigManaged === true;
       if (appId === "opencode") {
         return opencodeLiveIds?.includes(providerId) ?? false;
       }
@@ -134,7 +131,7 @@ export function ProviderList({
       }
       return true; // 其他应用始终返回 true
     },
-    [appId, opencodeLiveIds, openclawLiveIds, hermesLiveIds, providers],
+    [appId, opencodeLiveIds, openclawLiveIds, hermesLiveIds],
   );
 
   // OpenClaw: query default model to determine which provider is default
@@ -151,7 +148,7 @@ export function ProviderList({
   );
 
   // Only apps with an explicit local-routing capability participate in
-  // failover. Additive apps such as Pi never query or render this state.
+  // failover. Additive apps never query or render this state.
   const supportsFailover = isProxyAppId(appId);
   const { data: isAutoFailoverEnabled } = useAutoFailoverEnabled(
     appId,
@@ -209,20 +206,6 @@ export function ProviderList({
     enabled: appId === "claude-desktop",
     refetchInterval: appId === "claude-desktop" ? 5000 : false,
   });
-  const {
-    data: piCurrentState,
-    isSuccess: isPiCurrentStateSuccess,
-    isError: isPiCurrentStateError,
-    error: piCurrentStateError,
-  } = usePiCurrentState(appId === "pi");
-  const isPiAuthoritativeStateReady = appId !== "pi" || isPiCurrentStateSuccess;
-  const isPiProviderInConfig = useCallback(
-    (provider: Provider): boolean => {
-      if (!isPiAuthoritativeStateReady) return false;
-      return piCurrentState?.enabledProviderIds.includes(provider.id) ?? false;
-    },
-    [isPiAuthoritativeStateReady, piCurrentState],
-  );
 
   // 连通性检查不发真实请求、无封号/计费风险，直接执行（无需确认弹窗）。
   const handleTest = useCallback(
@@ -376,30 +359,6 @@ export function ProviderList({
     return messages;
   }, [appId, claudeDesktopStatus, t]);
 
-  const piStateErrorMessages = [
-    isPiCurrentStateError ? extractErrorMessage(piCurrentStateError) : "",
-  ].filter(Boolean);
-  const piStateErrorNotice =
-    appId === "pi" && piStateErrorMessages.length > 0 ? (
-      <div
-        role="alert"
-        className="rounded-lg border border-amber-500/30 bg-amber-500/10 px-4 py-3 text-sm text-amber-900 dark:text-amber-200"
-      >
-        <div className="flex items-center gap-2 font-medium">
-          <AlertTriangle className="h-4 w-4 shrink-0" />
-          {t("pi.current.readFailed", {
-            defaultValue: "无法读取 Pi 当前配置",
-          })}
-        </div>
-        <p className="mt-1 text-xs leading-relaxed">
-          {t("pi.current.stateUnavailableHint")}
-          {piStateErrorMessages.length > 0
-            ? ` ${piStateErrorMessages.join(" · ")}`
-            : ""}
-        </p>
-      </div>
-    ) : null;
-
   if (isLoading) {
     return (
       <div className="space-y-3">
@@ -416,15 +375,10 @@ export function ProviderList({
   if (sortedProviders.length === 0) {
     return (
       <div className="mt-4 space-y-4">
-        {piStateErrorNotice}
         <ProviderEmptyState
           appId={appId}
-          onCreate={appId === "pi" ? undefined : onCreate}
-          onImport={
-            appId === "pi" || appId === "mcode"
-              ? undefined
-              : () => importMutation.mutate()
-          }
+          onCreate={onCreate}
+          onImport={() => importMutation.mutate()}
         />
       </div>
     );
@@ -449,27 +403,20 @@ export function ProviderList({
               isOmoSlim && provider.id === (currentOmoSlimId || "");
             const isHermesCurrent =
               appId === "hermes" && hermesCurrentProviderId === provider.id;
-            const isCurrent =
-              appId === "pi"
-                ? false
-                : isOmo
-                  ? isOmoCurrent
-                  : isOmoSlim
-                    ? isOmoSlimCurrent
-                    : appId === "hermes"
-                      ? isHermesCurrent
-                      : provider.id === currentProviderId;
+            const isCurrent = isOmo
+              ? isOmoCurrent
+              : isOmoSlim
+                ? isOmoSlimCurrent
+                : appId === "hermes"
+                  ? isHermesCurrent
+                  : provider.id === currentProviderId;
             return (
               <SortableProviderCard
                 key={provider.id}
                 provider={provider}
                 isCurrent={isCurrent}
                 appId={appId}
-                isInConfig={
-                  appId === "pi"
-                    ? isPiProviderInConfig(provider)
-                    : isProviderInConfig(provider.id)
-                }
+                isInConfig={isProviderInConfig(provider.id)}
                 isOmo={isOmo}
                 isOmoSlim={isOmoSlim}
                 onSwitch={onSwitch}
@@ -503,16 +450,11 @@ export function ProviderList({
                     : isProviderDefaultModel(provider.id)
                 }
                 isRemovalProtected={
-                  appId === "pi"
-                    ? false
-                    : appId === "hermes"
-                      ? isHermesCurrent
-                      : appId === "openclaw"
-                        ? isProviderDefaultModel(provider.id)
-                        : false
-                }
-                isStateChangeProtected={
-                  appId === "pi" && !isPiAuthoritativeStateReady
+                  appId === "hermes"
+                    ? isHermesCurrent
+                    : appId === "openclaw"
+                      ? isProviderDefaultModel(provider.id)
+                      : false
                 }
                 onSetAsDefault={
                   onSetAsDefault
@@ -529,7 +471,6 @@ export function ProviderList({
 
   return (
     <div className="mt-4 space-y-4">
-      {piStateErrorNotice}
       {claudeDesktopStatusMessages.length > 0 && (
         <div className="rounded-lg border border-amber-500/30 bg-amber-500/10 px-4 py-3 text-sm text-amber-900 dark:text-amber-200">
           <div className="flex items-center gap-2 font-medium">
@@ -651,7 +592,6 @@ interface SortableProviderCardProps {
   // OpenClaw: default model
   isDefaultModel?: boolean;
   isRemovalProtected?: boolean;
-  isStateChangeProtected?: boolean;
   onSetAsDefault?: (modelId?: string) => void;
 }
 
@@ -683,7 +623,6 @@ function SortableProviderCard({
   activeProviderId,
   isDefaultModel,
   isRemovalProtected,
-  isStateChangeProtected,
   onSetAsDefault,
 }: SortableProviderCardProps) {
   const {
@@ -738,7 +677,6 @@ function SortableProviderCard({
         // OpenClaw: default model
         isDefaultModel={isDefaultModel}
         isRemovalProtected={isRemovalProtected}
-        isStateChangeProtected={isStateChangeProtected}
         onSetAsDefault={onSetAsDefault}
       />
     </div>

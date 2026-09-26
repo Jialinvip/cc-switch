@@ -634,59 +634,17 @@ describe("EditProviderDialog", () => {
     });
   });
 
-  it("编辑 Pi 供应商时保留通用元数据", async () => {
+  it("重新打开编辑表单后忽略上一轮的就绪回调", async () => {
     const provider: Provider = {
-      id: "pi-provider",
-      name: "Pi Provider",
-      settingsConfig: {
-        baseUrl: "https://api.example.com/v1",
-        models: [{ id: "model" }],
-      },
-      meta: {
-        isPartner: true,
-        endpointAutoSelect: true,
-        custom_endpoints: {
-          "https://failover.example.com/v1": {
-            url: "https://failover.example.com/v1",
-            addedAt: 1,
-          },
-        },
-      },
-    };
-    const handleSubmit = vi.fn().mockResolvedValue(undefined);
-
-    render(
-      <EditProviderDialog
-        open
-        provider={provider}
-        onOpenChange={vi.fn()}
-        onSubmit={handleSubmit}
-        appId="pi"
-      />,
-    );
-
-    fireEvent.click(screen.getByRole("button", { name: "common.save" }));
-
-    await waitFor(() => expect(handleSubmit).toHaveBeenCalledTimes(1));
-    expect(handleSubmit.mock.calls[0][0].provider.meta).toMatchObject({
-      isPartner: true,
-    });
-    expect(handleSubmit.mock.calls[0][0]).not.toHaveProperty(
-      "expectedSettingsConfig",
-    );
-  });
-
-  it("重新打开 Pi 编辑表单后忽略上一轮的就绪回调", async () => {
-    const provider: Provider = {
-      id: "pi-provider",
-      name: "Pi Provider",
+      id: "claude-provider",
+      name: "Claude Provider",
       settingsConfig: { models: [{ id: "model" }] },
     };
     const props = {
       provider,
       onOpenChange: vi.fn(),
       onSubmit: vi.fn(),
-      appId: "pi" as const,
+      appId: "claude" as const,
     };
     const { rerender } = render(<EditProviderDialog open {...props} />);
 

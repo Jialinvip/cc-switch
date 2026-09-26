@@ -7,6 +7,4 @@ export type AppId =
   | "grokbuild"
   | "opencode"
   | "openclaw"
-  | "hermes"
-  | "pi"
-  | "mcode";
+  | "hermes";

@@ -11,8 +11,6 @@ import {
   grokBuildOfficialPreset,
   grokBuildProviderPresets,
 } from "@/config/grokBuildProviderPresets";
-import { piProviderPresets } from "@/config/piProviderPresets";
-import { mcodeProviderPresets } from "@/config/mcodeProviderPresets";
 
 /**
  * 业务约束：每个应用的预设清单只保留「官方端点 + One API」。
@@ -28,8 +26,6 @@ const presetLists: Array<[string, ReadonlyArray<{ name: string }>]> = [
   ["opencode", opencodeProviderPresets],
   ["universal", universalProviderPresets],
   ["grokbuild", [grokBuildOfficialPreset, ...grokBuildProviderPresets]],
-  ["pi", piProviderPresets],
-  ["mcode", mcodeProviderPresets],
 ];
 
 const isOfficialOrOneApi = (preset: {

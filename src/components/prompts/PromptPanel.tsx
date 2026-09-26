@@ -3,10 +3,11 @@ import { useTranslation } from "react-i18next";
 import { type AppId } from "@/lib/api";
 import { usePromptActions } from "@/hooks/usePromptActions";
 import { useTauriEvent } from "@/hooks/useTauriEvent";
-import PiPromptPanel, { type PromptPrimaryAction } from "./PiPromptPanel";
 import PromptFormPanel from "./PromptFormPanel";
 import { PromptLibrary } from "./PromptLibrary";
 import { ConfirmDialog } from "../ConfirmDialog";
+
+export type PromptPrimaryAction = "prompt" | "template" | null;
 
 interface PromptPanelProps {
   open: boolean;
@@ -20,8 +21,6 @@ interface PromptPanelProps {
 export interface PromptPanelHandle {
   openAdd: () => void;
 }
-
-export type { PromptPrimaryAction } from "./PiPromptPanel";
 
 const StandardPromptPanel = React.forwardRef<
   PromptPanelHandle,
@@ -318,18 +317,6 @@ StandardPromptPanel.displayName = "StandardPromptPanel";
 
 const PromptPanel = React.forwardRef<PromptPanelHandle, PromptPanelProps>(
   (props, ref) => {
-    if (props.appId === "pi") {
-      return (
-        <PiPromptPanel
-          ref={ref}
-          open={props.open}
-          onInteractionBlockedChange={props.onInteractionBlockedChange}
-          onNavigationBlockedChange={props.onNavigationBlockedChange}
-          onPrimaryActionChange={props.onPrimaryActionChange}
-        />
-      );
-    }
-
     return <StandardPromptPanel ref={ref} {...props} />;
   },
 );

@@ -55,7 +55,6 @@ vi.mock("@/lib/query", () => ({
 
 const providersApiUpdateMock = vi.fn();
 const providersApiUpdateTrayMenuMock = vi.fn();
-const piApiUpdateProviderUsageScriptMock = vi.fn();
 const settingsApiGetMock = vi.fn();
 const settingsApiApplyMock = vi.fn();
 const openclawApiGetModelCatalogMock = vi.fn();
@@ -63,10 +62,6 @@ const openclawApiGetDefaultModelMock = vi.fn();
 const openclawApiSetDefaultModelMock = vi.fn();
 
 vi.mock("@/lib/api", () => ({
-  piApi: {
-    updateProviderUsageScript: (...args: unknown[]) =>
-      piApiUpdateProviderUsageScriptMock(...args),
-  },
   providersApi: {
     update: (...args: unknown[]) => providersApiUpdateMock(...args),
     updateTrayMenu: (...args: unknown[]) =>
@@ -118,7 +113,6 @@ beforeEach(() => {
   switchProviderMutateAsync.mockReset();
   providersApiUpdateMock.mockReset();
   providersApiUpdateTrayMenuMock.mockReset();
-  piApiUpdateProviderUsageScriptMock.mockReset();
   settingsApiGetMock.mockReset();
   settingsApiApplyMock.mockReset();
   openclawApiGetModelCatalogMock.mockReset();
@@ -653,36 +647,6 @@ describe("useProviderActions", () => {
 
     expect(toastErrorMock).toHaveBeenCalledTimes(1);
     expect(toastErrorMock.mock.calls[0]?.[0]).toBe("Save failed");
-  });
-
-  it("saves Pi usage metadata without updating the native provider config", async () => {
-    piApiUpdateProviderUsageScriptMock.mockResolvedValueOnce(true);
-    const { wrapper } = createWrapper();
-    const provider = createProvider({
-      settingsConfig: {
-        name: "Pi provider",
-        futureField: { preserve: true },
-      },
-    });
-    const script: UsageScript = {
-      enabled: true,
-      language: "javascript",
-      code: "return {}",
-    };
-
-    const { result } = renderHook(() => useProviderActions("pi"), {
-      wrapper,
-    });
-
-    await act(async () => {
-      await result.current.saveUsageScript(provider, script);
-    });
-
-    expect(piApiUpdateProviderUsageScriptMock).toHaveBeenCalledWith(
-      provider.id,
-      script,
-    );
-    expect(providersApiUpdateMock).not.toHaveBeenCalled();
   });
 
   it("should use default error message when saveUsageScript fails without error message", async () => {

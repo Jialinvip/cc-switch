@@ -52,8 +52,6 @@ export function AddProviderDialog({
     appId !== "opencode" &&
     appId !== "openclaw" &&
     appId !== "hermes" &&
-    appId !== "pi" &&
-    appId !== "mcode" &&
     appId !== "grokbuild" &&
     appId !== "claude-desktop";
   const [activeTab, setActiveTab] = useState<"app-specific" | "universal">(
@@ -90,12 +88,10 @@ export function AddProviderDialog({
   currentFormReadyToken.current = formReadyToken;
   const [formReadyState, setFormReadyState] = useState({
     token: formReadyToken,
-    ready: appId !== "pi",
+    ready: true,
   });
   const isFormReady =
-    formReadyState.token === formReadyToken
-      ? formReadyState.ready
-      : appId !== "pi";
+    formReadyState.token === formReadyToken ? formReadyState.ready : true;
   const handleSubmitReadyChange = useCallback(
     (ready: boolean) => {
       if (currentFormReadyToken.current === formReadyToken) {
@@ -197,9 +193,7 @@ export function AddProviderDialog({
       if (
         (appId === "opencode" ||
           appId === "openclaw" ||
-          appId === "hermes" ||
-          appId === "pi" ||
-          appId === "mcode") &&
+          appId === "hermes") &&
         values.providerKey
       ) {
         providerData.providerKey = values.providerKey;
@@ -409,7 +403,7 @@ export function AddProviderDialog({
       title={t("provider.addNewProvider")}
       onClose={handlePanelClose}
       footer={footer}
-      contentClassName={appId === "pi" ? "pt-3 pb-0" : "pt-3"}
+      contentClassName="pt-3"
     >
       {showUniversalTab ? (
         <Tabs

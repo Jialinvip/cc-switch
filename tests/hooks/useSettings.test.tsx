@@ -14,7 +14,6 @@ const updateTrayMenuMock = vi.fn();
 const getCurrentMock = vi.fn();
 const getAllMock = vi.fn();
 const getQueryDataMock = vi.fn();
-const invalidatePiDirectoryCachesMock = vi.fn();
 const toastErrorMock = vi.fn();
 const toastSuccessMock = vi.fn();
 
@@ -43,8 +42,6 @@ vi.mock("@/hooks/useSettingsMetadata", () => ({
 }));
 
 vi.mock("@/lib/query", () => ({
-  invalidatePiDirectoryCaches: (...args: unknown[]) =>
-    invalidatePiDirectoryCachesMock(...args),
   useSettingsQuery: (...args: unknown[]) => useSettingsQueryMock(...args),
   useSaveSettingsMutation: () => ({
     mutateAsync: mutateAsyncMock,
@@ -96,7 +93,6 @@ const createSettingsFormMock = (overrides: Record<string, unknown> = {}) => ({
     opencodeConfigDir: "/opencode",
     openclawConfigDir: "/openclaw",
     hermesConfigDir: "/hermes",
-    piConfigDir: "/pi",
     language: "zh",
   },
   isLoading: false,
@@ -119,7 +115,6 @@ const createDirectorySettingsMock = (
     opencode: "/default/opencode",
     openclaw: "/default/openclaw",
     hermes: "/default/hermes",
-    pi: "/default/pi",
   },
   isLoading: false,
   initialAppConfigDir: undefined,
@@ -151,7 +146,6 @@ describe("useSettings hook", () => {
     applyClaudeOnboardingSkipMock.mockReset();
     clearClaudeOnboardingSkipMock.mockReset();
     syncCurrentProvidersLiveMock.mockReset();
-    invalidatePiDirectoryCachesMock.mockReset();
     getCurrentMock.mockReset();
     getAllMock.mockReset();
     getQueryDataMock.mockReset();
@@ -170,7 +164,6 @@ describe("useSettings hook", () => {
       opencodeConfigDir: "/server/opencode",
       openclawConfigDir: "/server/openclaw",
       hermesConfigDir: "/server/hermes",
-      piConfigDir: "/server/pi",
       language: "zh",
     };
 
@@ -358,26 +351,6 @@ describe("useSettings hook", () => {
     expect(syncCurrentProvidersLiveMock).not.toHaveBeenCalled();
   });
 
-  it("sanitizes the Pi directory without projecting providers", async () => {
-    settingsFormMock = createSettingsFormMock({
-      settings: {
-        ...serverSettings,
-        piConfigDir: "  /custom/pi  ",
-      },
-    });
-
-    const { result } = renderHook(() => useSettings());
-
-    await act(async () => {
-      await result.current.saveSettings(undefined, { silent: true });
-    });
-
-    const payload = mutateAsyncMock.mock.calls[0][0] as Settings;
-    expect(payload.piConfigDir).toBe("/custom/pi");
-    expect(syncCurrentProvidersLiveMock).not.toHaveBeenCalled();
-    expect(invalidatePiDirectoryCachesMock).toHaveBeenCalledTimes(1);
-  });
-
   it("shows toast when Claude plugin sync fails but continues flow", async () => {
     // 设置服务器状态为 false,本地状态为 true,触发状态变化
     serverSettings = {
@@ -495,7 +468,6 @@ describe("useSettings hook", () => {
       opencode: "/server/opencode",
       openclaw: "/server/openclaw",
       hermes: "/server/hermes",
-      pi: "/server/pi",
     });
     expect(metadataMock.setRequiresRestart).toHaveBeenCalledWith(false);
   });

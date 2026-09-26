@@ -3,7 +3,6 @@ import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
 import {
-  piApi,
   providersApi,
   settingsApi,
   openclawApi,
@@ -349,8 +348,7 @@ export function useProviderActions(
             }
           } else if (
             activeApp === "opencode" ||
-            activeApp === "openclaw" ||
-            activeApp === "mcode"
+            activeApp === "openclaw"
           ) {
             messageKey = "notifications.addToConfigSuccess";
             defaultMessage = "已添加到配置";
@@ -393,11 +391,7 @@ export function useProviderActions(
           },
         };
 
-        if (activeApp === "pi") {
-          await piApi.updateProviderUsageScript(provider.id, script);
-        } else {
-          await providersApi.update(updatedProvider, activeApp);
-        }
+        await providersApi.update(updatedProvider, activeApp);
         await queryClient.invalidateQueries({
           queryKey: ["providers", activeApp],
         });

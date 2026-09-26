@@ -10,6 +10,11 @@
 每个应用的供应商清单**只保留两个端点**：该应用的「官方端点」和「One API」，
 并让 **One API 默认启用**。上游频繁新增的第三方厂商端点一律不要。
 
+**应用标签（App Switcher 标签页）固定为现有 8 个**：`claude` / `claude-desktop` /
+`codex` / `gemini` / `grokbuild` / `opencode` / `openclaw` / `hermes`。
+上游再新增受管应用（如 Pi、MiniMax Code）**一律不要接入**，也不要在
+`AppId` / `APP_IDS` / `DEFAULT_VISIBLE_APPS` 等清单里加回。
+
 ## 维护策略：当补丁重打，别跟上游 merge 硬解冲突
 
 上游几乎每次更新都在改这些预设文件。**不要**去逐行解决 merge 冲突，
@@ -178,6 +183,30 @@ cd src-tauri && cargo check && cargo test
 ---
 
 ## 同步实录
+
+### v3.20.5+（2026-09-26）删除 Pi / MiniMax Code 应用标签
+
+- **动机**：应用切换器只保留现有 8 个标签；Pi 与 MiniMax Code 是上游 v3.20.x
+  新增的受管应用，本 fork 不接入。**后续同步上游时也不要再新增应用标签。**
+- **前端删除**（`AppId` / `VisibleApps` / usage `AppType` 不再含 `pi`/`mcode`）：
+  - 清单：`APP_IDS`、`DEFAULT_VISIBLE_APPS`、`SKILLS_APP_IDS`、`ADDITIVE_APP_IDS`、
+    `MCP_APP_IDS`、`APP_ICON_MAP`、`AppSwitcher`、`AppVisibilitySettings`、
+    `AboutSection` 工具卡、`DirectorySettings` 等
+  - 专属文件整删：`PiProviderForm` / `McodeProviderForm` / `PiPromptPanel` /
+    `PiNativePromptResources` / `piProviderPresets` / `mcodeProviderPresets` /
+    `piModelCatalog` / `piThinkingProfiles` / `piPromptSlug` / `piPromptTemplate` /
+    `lib/api/pi.ts` / `lib/query/pi.ts` 及对应测试
+  - 共享文件去掉 pi/mcode 分支：`App.tsx`、`ProviderForm`、`ProviderList`、
+    `Add/EditProviderDialog`、`mutations.ts`、`UnifiedSkillsPanel`、`PromptPanel` 等
+- **Rust**：为保持编译兼容与数据库行可反序列化，**暂保留** `AppType::Pi` /
+  `AppType::Mcode` 枚举变体与既有 match 臂（含 `pi_config`/`mcode_config` 等
+  专属模块）。前端已不再产生 `pi`/`mcode` 的 `AppId`，UI 上两个标签已消失。
+  若日后上游继续膨胀这两套后端，可再做一次 Rust 侧彻底剥离。
+- **不删**：MiniMax **厂商**相关（`codingPlanProviders` 的 minimax、定价
+  `minimax-m*`、`minimax` 图标、模型目录条目）——那是 API 供应商，不是
+  MiniMax Code 应用。其它应用代码一概不动。
+- **验证**：`tsc --noEmit` 零错误；`pnpm test:unit` **118 个测试文件 / 841 个测试全部通过**
+  （Rust 本机无 cargo，靠 CI）。
 
 ### v3.20.5（2026-09-25，对应上游 v3.20.4）
 

@@ -56,7 +56,6 @@ interface ProviderActionsProps {
   // OpenClaw: default model
   isDefaultModel?: boolean;
   isRemovalProtected?: boolean;
-  isStateChangeProtected?: boolean;
   defaultModelOptions?: OpenClawDefaultModelOption[];
   onSetAsDefault?: (modelId?: string) => void;
 }
@@ -97,7 +96,6 @@ export function ProviderActions({
   // OpenClaw: default model
   isDefaultModel = false,
   isRemovalProtected = false,
-  isStateChangeProtected = false,
   defaultModelOptions = [],
   onSetAsDefault,
 }: ProviderActionsProps) {
@@ -113,7 +111,6 @@ export function ProviderActions({
   const isFailoverMode =
     !isAdditiveMode && !isOmo && isAutoFailoverEnabled && onToggleFailover;
   const isMembershipMode = isAdditiveMode;
-  const piStateChangeHint = t("pi.current.stateUnavailableHint");
 
   const handleMainButtonClick = () => {
     if (isOmo) {
@@ -163,22 +160,6 @@ export function ProviderActions({
 
     // 累加模式（OpenCode 非 OMO / OpenClaw）
     if (isMembershipMode) {
-      if (isStateChangeProtected) {
-        return {
-          disabled: true,
-          variant: "secondary" as const,
-          className: "opacity-40 cursor-not-allowed",
-          icon: isInConfig ? (
-            <Minus className="h-4 w-4" />
-          ) : (
-            <Plus className="h-4 w-4" />
-          ),
-          text: isInConfig
-            ? t("provider.removeFromConfig", { defaultValue: "移除" })
-            : t("provider.enable", { defaultValue: "启用" }),
-          title: piStateChangeHint,
-        };
-      }
       if (isInConfig) {
         return {
           disabled: isRemovalProtected,
@@ -197,10 +178,7 @@ export function ProviderActions({
         className:
           "bg-emerald-500 hover:bg-emerald-600 dark:bg-emerald-600 dark:hover:bg-emerald-700",
         icon: <Plus className="h-4 w-4" />,
-        text:
-          appId === "pi"
-            ? t("provider.enable", { defaultValue: "启用" })
-            : t("provider.addToConfig", { defaultValue: "添加" }),
+        text: t("provider.addToConfig", { defaultValue: "添加" }),
       };
     }
 
@@ -260,21 +238,11 @@ export function ProviderActions({
 
   const buttonState = getMainButtonState();
   const canDelete =
-    !isReadOnly &&
-    (appId === "pi"
-      ? !isStateChangeProtected
-      : isOmo || isAdditiveMode
-        ? true
-        : !isCurrent);
+    !isReadOnly && (isOmo || isAdditiveMode ? true : !isCurrent);
   const readOnlyHint = t("provider.managedByHermesHint", {
     defaultValue: "由 Hermes 管理，请在 Hermes Web UI 中编辑",
   });
-  const deleteHint =
-    appId === "pi" && isStateChangeProtected
-      ? piStateChangeHint
-      : isReadOnly
-        ? readOnlyHint
-        : t("common.delete");
+  const deleteHint = isReadOnly ? readOnlyHint : t("common.delete");
 
   return (
     <div className="flex items-center gap-1.5">

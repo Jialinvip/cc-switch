@@ -3,9 +3,8 @@ import { useSessionSearch } from "@/hooks/useSessionSearch";
 import { useTranslation } from "react-i18next";
 import { useVirtualizer } from "@tanstack/react-virtual";
 import { toast } from "sonner";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQueryClient } from "@tanstack/react-query";
 import {
-  AlertTriangle,
   Copy,
   RefreshCw,
   Search,
@@ -24,12 +23,11 @@ import {
   ChevronsDownUp,
 } from "lucide-react";
 import {
-  piKeys,
   useDeleteSessionMutation,
   useSessionMessagesQuery,
   useSessionsQuery,
 } from "@/lib/query";
-import { piApi, sessionsApi } from "@/lib/api";
+import { sessionsApi } from "@/lib/api";
 import type { SessionMeta } from "@/types";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -90,9 +88,7 @@ type ProviderFilter =
   | "opencode"
   | "openclaw"
   | "gemini"
-  | "hermes"
-  | "pi"
-  | "mcode";
+  | "hermes";
 
 type SessionListViewMode = "flat" | "grouped";
 
@@ -195,12 +191,6 @@ export function SessionManagerPage({ appId }: { appId: string }) {
   const queryClient = useQueryClient();
   const { data, isLoading, refetch } = useSessionsQuery();
   const sessions = data ?? [];
-  const piSessionDiscovery = useQuery({
-    queryKey: piKeys.sessionDiscovery,
-    queryFn: () => piApi.getSessionDiscovery(),
-    enabled: appId === "pi",
-    staleTime: 30 * 1000,
-  });
   const detailRef = useRef<HTMLDivElement | null>(null);
   const scrollContainerRef = useRef<HTMLDivElement | null>(null);
   const [activeMessageIndex, setActiveMessageIndex] = useState<number | null>(
@@ -562,7 +552,7 @@ export function SessionManagerPage({ appId }: { appId: string }) {
     () =>
       filteredSessions.filter(
         (session) =>
-          Boolean(session.sourcePath) && session.providerId !== "mcode",
+          Boolean(session.sourcePath),
       ),
     [filteredSessions],
   );
@@ -579,7 +569,7 @@ export function SessionManagerPage({ appId }: { appId: string }) {
     () =>
       selectedSessions.filter(
         (session) =>
-          Boolean(session.sourcePath) && session.providerId !== "mcode",
+          Boolean(session.sourcePath),
       ),
     [selectedSessions],
   );
@@ -618,7 +608,7 @@ export function SessionManagerPage({ appId }: { appId: string }) {
   ): GroupSelectionState => {
     const selectableSessions = groupSessions.filter(
       (session) =>
-        Boolean(session.sourcePath) && session.providerId !== "mcode",
+        Boolean(session.sourcePath),
     );
     const selectedCount = selectableSessions.filter((session) =>
       selectedSessionKeys.has(getSessionKey(session)),
@@ -637,7 +627,7 @@ export function SessionManagerPage({ appId }: { appId: string }) {
   };
 
   const toggleSessionChecked = (session: SessionMeta, checked: boolean) => {
-    if (!session.sourcePath || session.providerId === "mcode") return;
+    if (!session.sourcePath) return;
     const key = getSessionKey(session);
     setSelectedSessionKeys((current) => {
       const next = new Set(current);
@@ -656,7 +646,7 @@ export function SessionManagerPage({ appId }: { appId: string }) {
   ) => {
     const selectableSessions = groupSessions.filter(
       (session) =>
-        Boolean(session.sourcePath) && session.providerId !== "mcode",
+        Boolean(session.sourcePath),
     );
     if (selectableSessions.length === 0) return;
 
@@ -715,7 +705,7 @@ export function SessionManagerPage({ appId }: { appId: string }) {
         selectionMode={selectionMode}
         searchQuery={search}
         isChecked={selectedSessionKeys.has(sessionKey)}
-        isCheckDisabled={!session.sourcePath || session.providerId === "mcode"}
+        isCheckDisabled={!session.sourcePath}
         onSelect={setSelectedKey}
         onToggleChecked={(checked) => toggleSessionChecked(session, checked)}
       />
@@ -818,37 +808,6 @@ export function SessionManagerPage({ appId }: { appId: string }) {
         onWheel={(e) => e.stopPropagation()}
       >
         <div className="flex-1 overflow-hidden flex flex-col gap-4">
-          {appId === "pi" &&
-            piSessionDiscovery.data?.status === "requires_project_context" && (
-              <div
-                role="status"
-                className="flex shrink-0 items-start gap-2 rounded-lg border border-amber-500/30 bg-amber-500/10 px-3 py-2 text-sm text-amber-800 dark:text-amber-200"
-              >
-                <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" />
-                <span>
-                  {t("sessionManager.piRelativeSessionDir")}{" "}
-                  <code>{piSessionDiscovery.data.configuredPath}</code>
-                </span>
-              </div>
-            )}
-          {appId === "pi" &&
-            (piSessionDiscovery.data?.status === "unavailable" ||
-              piSessionDiscovery.isError) && (
-              <div
-                role="alert"
-                className="flex shrink-0 items-start gap-2 rounded-lg border border-red-500/30 bg-red-500/10 px-3 py-2 text-sm text-red-800 dark:text-red-200"
-              >
-                <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" />
-                <span>
-                  {t("sessionManager.piDiscoveryUnavailable", {
-                    error:
-                      piSessionDiscovery.data?.status === "unavailable"
-                        ? piSessionDiscovery.data.reason
-                        : extractErrorMessage(piSessionDiscovery.error),
-                  })}
-                </span>
-              </div>
-            )}
           {/* 主内容区域 - 左右分栏 */}
           <div className="flex-1 overflow-hidden grid gap-4 md:grid-cols-[320px_1fr]">
             {/* 左侧会话列表 */}
@@ -1181,13 +1140,6 @@ export function SessionManagerPage({ appId }: { appId: string }) {
                                   size={14}
                                 />
                                 <span>Gemini CLI</span>
-                              </div>
-                            </SelectItem>
-                            <SelectItem value="mcode">MiniMax Code</SelectItem>
-                            <SelectItem value="pi">
-                              <div className="flex items-center gap-2">
-                                <ProviderIcon icon="pi" name="pi" size={14} />
-                                <span>Pi</span>
                               </div>
                             </SelectItem>
                           </SelectContent>
@@ -1618,9 +1570,7 @@ export function SessionManagerPage({ appId }: { appId: string }) {
                                 setDeleteTargets([selectedSession])
                               }
                               disabled={
-                                !selectedSession.sourcePath ||
-                                selectedSession.providerId === "mcode" ||
-                                isDeleting
+                                !selectedSession.sourcePath || isDeleting
                               }
                             >
                               <Trash2 className="size-3.5" />
