@@ -65,10 +65,7 @@ export function isProxyAppId(appId: string): appId is ProxyAppId {
   return (PROXY_APP_IDS as string[]).includes(appId);
 }
 
-export type AdditiveAppId = Extract<
-  AppId,
-  "opencode" | "openclaw" | "hermes"
->;
+export type AdditiveAppId = Extract<AppId, "opencode" | "openclaw" | "hermes">;
 
 export const ADDITIVE_APP_IDS: AdditiveAppId[] = [
   "opencode",

@@ -549,11 +549,7 @@ export function SessionManagerPage({ appId }: { appId: string }) {
   };
 
   const deletableFilteredSessions = useMemo(
-    () =>
-      filteredSessions.filter(
-        (session) =>
-          Boolean(session.sourcePath),
-      ),
+    () => filteredSessions.filter((session) => Boolean(session.sourcePath)),
     [filteredSessions],
   );
 
@@ -566,11 +562,7 @@ export function SessionManagerPage({ appId }: { appId: string }) {
   );
 
   const selectedDeletableSessions = useMemo(
-    () =>
-      selectedSessions.filter(
-        (session) =>
-          Boolean(session.sourcePath),
-      ),
+    () => selectedSessions.filter((session) => Boolean(session.sourcePath)),
     [selectedSessions],
   );
 
@@ -606,9 +598,8 @@ export function SessionManagerPage({ appId }: { appId: string }) {
   const getGroupSelectionState = (
     groupSessions: SessionMeta[],
   ): GroupSelectionState => {
-    const selectableSessions = groupSessions.filter(
-      (session) =>
-        Boolean(session.sourcePath),
+    const selectableSessions = groupSessions.filter((session) =>
+      Boolean(session.sourcePath),
     );
     const selectedCount = selectableSessions.filter((session) =>
       selectedSessionKeys.has(getSessionKey(session)),
@@ -644,9 +635,8 @@ export function SessionManagerPage({ appId }: { appId: string }) {
     groupSessions: SessionMeta[],
     checked: boolean,
   ) => {
-    const selectableSessions = groupSessions.filter(
-      (session) =>
-        Boolean(session.sourcePath),
+    const selectableSessions = groupSessions.filter((session) =>
+      Boolean(session.sourcePath),
     );
     if (selectableSessions.length === 0) return;
 

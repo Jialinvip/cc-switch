@@ -2,12 +2,7 @@ import { useCallback } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
-import {
-  providersApi,
-  settingsApi,
-  openclawApi,
-  type AppId,
-} from "@/lib/api";
+import { providersApi, settingsApi, openclawApi, type AppId } from "@/lib/api";
 import type {
   Provider,
   UsageScript,
@@ -346,10 +341,7 @@ export function useProviderActions(
               messageKey = "notifications.claudeDesktopRestartRequired";
               defaultMessage = "切换成功，重启 Claude Desktop 后生效";
             }
-          } else if (
-            activeApp === "opencode" ||
-            activeApp === "openclaw"
-          ) {
+          } else if (activeApp === "opencode" || activeApp === "openclaw") {
             messageKey = "notifications.addToConfigSuccess";
             defaultMessage = "已添加到配置";
           }

@@ -189,12 +189,7 @@ export interface UsageRangeSelection {
  * dashboard through session importers. `openclaw` / `hermes` appear only as
  * managed apps elsewhere.
  */
-export type AppType =
-  | "claude"
-  | "codex"
-  | "gemini"
-  | "grokbuild"
-  | "opencode";
+export type AppType = "claude" | "codex" | "gemini" | "grokbuild" | "opencode";
 
 export type AppTypeFilter = "all" | AppType;
 

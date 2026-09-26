@@ -1054,7 +1054,6 @@ const ImportSkillsDialog: React.FC<ImportSkillsDialogProps> = ({
           opencode: false,
           openclaw: false,
           hermes: false,
-
         },
       })),
     );

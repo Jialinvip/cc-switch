@@ -191,9 +191,7 @@ export function AddProviderDialog({
       // Apps whose native catalog has a stable provider key use it as the
       // managed provider identity.
       if (
-        (appId === "opencode" ||
-          appId === "openclaw" ||
-          appId === "hermes") &&
+        (appId === "opencode" || appId === "openclaw" || appId === "hermes") &&
         values.providerKey
       ) {
         providerData.providerKey = values.providerKey;

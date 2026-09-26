@@ -56,11 +56,7 @@ export const useAddProviderMutation = (appId: AppId) => {
 
       let id: string;
 
-      if (
-        appId === "opencode" ||
-        appId === "openclaw" ||
-        appId === "hermes"
-      ) {
+      if (appId === "opencode" || appId === "openclaw" || appId === "hermes") {
         if (
           providerInput.category === "omo" ||
           providerInput.category === "omo-slim"
@@ -133,8 +129,7 @@ export const useAddProviderMutation = (appId: AppId) => {
       );
     },
     onError: (error: Error) => {
-      const detail =
-        extractErrorMessage(error) || t("common.unknown");
+      const detail = extractErrorMessage(error) || t("common.unknown");
       toast.error(
         t("notifications.addFailed", {
           defaultValue: "添加供应商失败: {{error}}",
@@ -188,8 +183,7 @@ export const useUpdateProviderMutation = (appId: AppId) => {
       );
     },
     onError: (error: Error) => {
-      const detail =
-        extractErrorMessage(error) || t("common.unknown");
+      const detail = extractErrorMessage(error) || t("common.unknown");
       toast.error(
         t("notifications.updateFailed", {
           defaultValue: "更新供应商失败: {{error}}",
@@ -254,8 +248,7 @@ export const useDeleteProviderMutation = (appId: AppId) => {
       );
     },
     onError: (error: Error) => {
-      const detail =
-        extractErrorMessage(error) || t("common.unknown");
+      const detail = extractErrorMessage(error) || t("common.unknown");
       toast.error(
         t("notifications.deleteFailed", {
           defaultValue: "删除供应商失败: {{error}}",

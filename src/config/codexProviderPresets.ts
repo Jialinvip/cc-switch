@@ -10,7 +10,6 @@ import type {
 } from "../types";
 import type { PresetTheme } from "./claudeProviderPresets";
 
-
 export interface CodexProviderPreset {
   name: string;
   nameKey?: string; // i18n key for localized display name
@@ -84,7 +83,6 @@ wire_api = "responses"
 requires_openai_auth = ${requiresOpenAiAuth}`;
 }
 
-
 export const codexProviderPresets: CodexProviderPreset[] = [
   {
     name: "OpenAI Official",
@@ -102,7 +100,7 @@ export const codexProviderPresets: CodexProviderPreset[] = [
     icon: "openai",
     iconColor: "#00A67E",
   },
-    {
+  {
     name: "One API",
     websiteUrl: "https://www.oneapi.work",
     apiKeyUrl: "https://www.oneapi.work",

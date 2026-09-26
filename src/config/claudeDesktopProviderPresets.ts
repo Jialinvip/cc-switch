@@ -83,8 +83,6 @@ const passthroughRoutes = (supports1m = false): ClaudeDesktopRoutePreset[] => [
   },
 ];
 
-
-
 export const claudeDesktopProviderPresets: ClaudeDesktopProviderPreset[] = [
   {
     name: "Claude Desktop Official",
