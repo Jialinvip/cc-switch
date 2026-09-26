@@ -184,7 +184,7 @@ cd src-tauri && cargo check && cargo test
 
 ## 同步实录
 
-### v3.20.5+（2026-09-26）删除 Pi / MiniMax Code 应用（前端 + Rust 全量剥离）
+### v3.20.6（2026-09-26）删除 Pi / MiniMax Code 应用（前端 + Rust 全量剥离）
 
 - **动机**：应用切换器只保留现有 8 个标签；Pi 与 MiniMax Code 是上游 v3.20.x
   新增的受管应用，本 fork 不接入。**后续同步上游时也不要再新增应用标签。**
