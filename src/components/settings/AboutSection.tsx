@@ -439,12 +439,12 @@ export function AboutSection({ isPortable }: AboutSectionProps) {
           : "";
 
       if (!displayVersion) {
-        await settingsApi.openExternal("https://www.oneapi.work//releases");
+        await settingsApi.openExternal("https://www.oneapi.work/releases");
         return;
       }
 
       await settingsApi.openExternal(
-        `https://www.oneapi.work//releases/tag/${displayVersion}`,
+        `https://www.oneapi.work/releases/tag/${displayVersion}`,
       );
     } catch (error) {
       console.error("[AboutSection] Failed to open release notes", error);

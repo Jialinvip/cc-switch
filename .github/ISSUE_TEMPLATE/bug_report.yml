@@ -14,8 +14,8 @@ body:
             我已阅读 README 中的[常见问题](https://www.oneapi.work/#常见问题)。
           required: true
         - label: |
-            I have searched for [existing issues](https://www.oneapi.work//issues), including closed ones.
-            我已搜索过[已有的 Issue](https://www.oneapi.work//issues)，包括已关闭的。
+            I have searched for [existing issues](https://www.oneapi.work/issues), including closed ones.
+            我已搜索过[已有的 Issue](https://www.oneapi.work/issues)，包括已关闭的。
           required: true
 
   - type: input

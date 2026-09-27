@@ -130,5 +130,5 @@
 
 欢迎提交 Issue 或 PR 改进文档：
 
-- [GitHub Issues](https://www.oneapi.work//issues)
+- [GitHub Issues](https://www.oneapi.work/issues)
 - [GitHub Repository](https://www.oneapi.work/)

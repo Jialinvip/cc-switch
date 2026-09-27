@@ -5202,7 +5202,7 @@ mod tests {
         assert_eq!(result["error"]["type"], "upstream_error");
     }
     // Regression tests for tool_choice without tools guard
-    // https://www.oneapi.work//issues/3557
+    // https://www.oneapi.work/issues/3557
 
     #[test]
     fn responses_request_to_chat_drops_tool_choice_when_no_tools() {

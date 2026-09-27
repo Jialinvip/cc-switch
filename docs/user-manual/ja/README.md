@@ -130,5 +130,5 @@ CC Switch ユーザーマニュアル
 
 Issue や PR でドキュメントの改善にご協力ください：
 
-- [GitHub Issues](https://www.oneapi.work//issues)
+- [GitHub Issues](https://www.oneapi.work/issues)
 - [GitHub Repository](https://www.oneapi.work/)

@@ -14,7 +14,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
-const RELEASES_URL = "https://www.oneapi.work//releases";
+const RELEASES_URL = "https://www.oneapi.work/releases";
 
 interface DatabaseUpgradeProps {
   payload: {

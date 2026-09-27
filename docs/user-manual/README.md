@@ -18,5 +18,5 @@
 
 ## Links
 
-- [GitHub Issues](https://www.oneapi.work//issues)
+- [GitHub Issues](https://www.oneapi.work/issues)
 - [GitHub Repository](https://www.oneapi.work/)
