@@ -439,9 +439,7 @@ export function AboutSection({ isPortable }: AboutSectionProps) {
           : "";
 
       if (!displayVersion) {
-        await settingsApi.openExternal(
-          "https://www.oneapi.work//releases",
-        );
+        await settingsApi.openExternal("https://www.oneapi.work//releases");
         return;
       }
 
