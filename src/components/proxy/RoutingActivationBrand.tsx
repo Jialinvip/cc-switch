@@ -85,7 +85,7 @@ export function RoutingActivationBrand({
       )}
 
       <motion.a
-        href="https://ccswitch.io"
+        href="https://www.gptvip.cn"
         target="_blank"
         rel="noreferrer"
         className={cn(

@@ -440,13 +440,13 @@ export function AboutSection({ isPortable }: AboutSectionProps) {
 
       if (!displayVersion) {
         await settingsApi.openExternal(
-          "https://github.com/farion1231/cc-switch/releases",
+          "https://www.oneapi.work//releases",
         );
         return;
       }
 
       await settingsApi.openExternal(
-        `https://github.com/farion1231/cc-switch/releases/tag/${displayVersion}`,
+        `https://www.oneapi.work//releases/tag/${displayVersion}`,
       );
     } catch (error) {
       console.error("[AboutSection] Failed to open release notes", error);
@@ -455,7 +455,7 @@ export function AboutSection({ isPortable }: AboutSectionProps) {
   }, [t, updateInfo?.availableVersion, version]);
 
   const handleOpenGithub = useCallback(() => {
-    void settingsApi.openExternal("https://github.com/farion1231/cc-switch");
+    void settingsApi.openExternal("https://www.oneapi.work/");
   }, []);
 
   const handleCheckUpdate = useCallback(async () => {
@@ -900,7 +900,7 @@ export function AboutSection({ isPortable }: AboutSectionProps) {
 
           <p className="min-w-0 flex-1 text-xs leading-relaxed sm:text-right">
             <a
-              href="https://github.com/farion1231/cc-switch"
+              href="https://www.oneapi.work/"
               onClick={(event) => {
                 event.preventDefault();
                 handleOpenGithub();
@@ -935,7 +935,7 @@ export function AboutSection({ isPortable }: AboutSectionProps) {
               type="button"
               variant="outline"
               size="sm"
-              onClick={() => settingsApi.openExternal("https://ccswitch.io")}
+              onClick={() => settingsApi.openExternal("https://www.gptvip.cn")}
               className="h-8 gap-1.5 text-xs"
             >
               <Globe className="h-3.5 w-3.5" />

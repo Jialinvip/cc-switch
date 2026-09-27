@@ -20,6 +20,6 @@
     <binary>cc-switch</binary>
   </provides>
 
-  <url type="homepage">https://github.com/farion1231/cc-switch</url>
-  <url type="bugtracker">https://github.com/farion1231/cc-switch/issues</url>
+  <url type="homepage">https://www.oneapi.work/</url>
+  <url type="bugtracker">https://www.oneapi.work//issues</url>
 </component>

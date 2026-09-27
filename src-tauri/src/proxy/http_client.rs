@@ -374,7 +374,7 @@ mod tests {
     #[test]
     fn test_mask_url_does_not_panic_on_multibyte_boundary() {
         // 一个无法被 Url::parse 解析、且在字节 20 处正好切在多字节字符中间的字符串。
-        // 回归 https://github.com/farion1231/cc-switch 的 mask_url 越界 panic。
+        // 回归 https://www.oneapi.work/ 的 mask_url 越界 panic。
         let bad = "这是一个无效的代理地址不能解析";
         assert!(bad.len() > 20 && !bad.is_char_boundary(20));
         let masked = mask_url(bad);
