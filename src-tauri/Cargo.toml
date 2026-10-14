@@ -31,6 +31,19 @@ tauri = { version = "2.8.2", features = ["tray-icon", "protocol-asset", "image-p
 tauri-plugin-log = "2"
 tauri-plugin-opener = "2"
 tauri-plugin-process = "2"
+# 【定制版】应用内更新已彻底关闭 —— 依赖保留仅为兼容 tauri.conf.json 的
+# updater 配置块（endpoints 为空），实际更新链路已在代码层短路。
+#
+# 为什么关：tauri.conf.json 的 updater pubkey 是**上游作者**的 minisign 公钥，
+# 原 endpoints 指向上游发布源（dl.ccswitch.io / oneapi.work）。链路一旦恢复，
+# 应用会提示升级，且一键升级会下载上游签名的**原版**安装包、把本仓库的定制构建
+# 覆盖掉。本仓库没有上游私钥，也签不出能通过该 pubkey 验签的更新包。
+#
+# 升级方式：https://github.com/Jialinvip/cc-switch/releases （手动下载）
+#
+# 同步上游后勿把 tauri.conf.json 的 endpoints 填回、勿把 createUpdaterArtifacts
+# 改 true、勿恢复 src-tauri/src/commands/settings.rs 里的下载安装实现。
+# tests/config/forkInAppUpdateDisabled.test.ts 会拦；代码侧说明见 src/lib/updater.ts。
 tauri-plugin-updater = "2"
 tauri-plugin-dialog = "2"
 tauri-plugin-store = "2"

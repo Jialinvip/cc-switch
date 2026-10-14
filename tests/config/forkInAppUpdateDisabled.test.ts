@@ -10,7 +10,8 @@ import { describe, expect, it } from "vitest";
  * 恢复，应用就会提示升级，且一键升级会装上原版、覆盖掉定制构建。
  *
  * 同步上游后若把 updater endpoints / 更新签名产物加回来，会让这些用例失败，
- * 提醒回到约定。改动前请先读 src/lib/updater.ts 与 tauri.conf.json 里的注释。
+ * 提醒回到约定。改动前请先读 src/lib/updater.ts 与 src-tauri/Cargo.toml 里的
+ * 注释（tauri.conf.json 是严格 JSON，写不了注释）。
  */
 
 /** 去掉 JSONC 的 `//` 行注释（字符串内的 `//` 不受影响），再交给 JSON.parse。 */
@@ -67,11 +68,24 @@ describe("fork: tauri updater feed stays disconnected", () => {
     expect(updaterConfig).not.toMatch(/dl\.ccswitch\.io|oneapi\.work|farion1231/);
   });
 
-  it("keeps the fork warning comment so a sync cannot silently re-enable it", () => {
-    // 注释本身也是约定的一部分：它写在 tauri.conf.json 的 updater 块上方，
-    // 专门提醒同步上游的人别把端点合回来。
+  it("keeps tauri.conf.json strict JSON so the build never regresses", () => {
+    // 【事故复盘】2026-10-14 的 v4.0.12 首次构建失败，原因是在本文件里写了
+    // `//` 注释：`tauri info` 能容忍 JSONC，但编译期 tauri-build 用严格 JSON
+    // 解析器，直接报 "key must be a string"。所以本文件必须能被 JSON.parse 直接
+    // 吃掉（不许先剥注释），警告文本改放在支持注释的 src-tauri/Cargo.toml。
     const raw = readFileSync(tauriConfPath, "utf8");
-    expect(raw).toMatch(/【定制版】应用内更新已彻底关闭/);
-    expect(raw).toMatch(/Jialinvip\/cc-switch\/releases/);
+    expect(() => JSON.parse(raw)).not.toThrow();
+    expect(raw).not.toMatch(/^\s*\/\//m);
+    expect(raw).not.toMatch(/\/\*/);
+  });
+
+  it("keeps the fork warning where comments are legal", () => {
+    // 注释本身也是约定的一部分：专门提醒同步上游的人别把端点合回来。
+    const cargoToml = readFileSync(
+      path.resolve(__dirname, "../../src-tauri/Cargo.toml"),
+      "utf8",
+    );
+    expect(cargoToml).toMatch(/【定制版】应用内更新已彻底关闭/);
+    expect(cargoToml).toMatch(/Jialinvip\/cc-switch\/releases/);
   });
 });

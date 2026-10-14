@@ -37,8 +37,6 @@
   "bundle": {
     "active": true,
     "targets": "all",
-    // 【定制版】勿改回 true：本仓库不签发更新包，产出 updater artifacts 没有意义，
-    // 反而会诱使后人把应用内更新链路接回来。理由见下方 plugins.updater 注释。
     "createUpdaterArtifacts": false,
     "icon": [
       "icons/32x32.png",
@@ -62,19 +60,6 @@
         "schemes": ["ccswitch"]
       }
     },
-    // 【定制版】应用内更新已彻底关闭，endpoints 必须保持为空。
-    //
-    // 为什么：下面这个 pubkey 是**上游作者**的 minisign 公钥，而原本的 endpoints
-    // 指向上游发布源（dl.ccswitch.io / oneapi.work）。链路一旦恢复，应用就会提示
-    // 升级，且一键升级会下载上游签名的**原版**安装包，把本仓库的定制构建覆盖掉。
-    // 本仓库没有上游私钥，也签不出能通过该 pubkey 验签的更新包，所以无法"换成
-    // 自己的更新源"来走一键升级。
-    //
-    // 因此升级方式是手动下载：https://github.com/Jialinvip/cc-switch/releases
-    //
-    // 同步上游后若看到 endpoints 被填回、或 createUpdaterArtifacts 变 true，
-    // 删回去。tests/config/forkInAppUpdateDisabled.test.ts 会拦；代码侧说明见
-    // src/lib/updater.ts。
     "updater": {
       "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IEM4MDI4QzlBNTczOTI4RTMKUldUaktEbFhtb3dDeUM5US9kT0FmdGR5Ti9vQzcwa2dTMlpibDVDUmQ2M0VGTzVOWnd0SGpFVlEK",
       "endpoints": []

@@ -150,7 +150,7 @@ name === "One API" || isOfficial === true || category === "official"
 
 | 位置 | 应当是 |
 |------|--------|
-| `src-tauri/tauri.conf.json` | `plugins.updater.endpoints: []`、`bundle.createUpdaterArtifacts: false`，且保留「【定制版】应用内更新已彻底关闭」注释 |
+| `src-tauri/tauri.conf.json` | `plugins.updater.endpoints: []`、`bundle.createUpdaterArtifacts: false`。**该文件必须是严格 JSON，不许写注释**（`tauri info` 能容忍 JSONC，但编译期 `tauri-build` 用严格解析器，写注释直接构建失败）——警告文本放在支持注释的 `src-tauri/Cargo.toml` 的 `tauri-plugin-updater` 依赖上方 |
 | `src/lib/updater.ts` | `IN_APP_UPDATE_ENABLED = false`；`checkForUpdate()` 直接返回"已是最新"、不访问网络 |
 | `src-tauri/src/commands/settings.rs` | `install_update_and_restart` 短路返回 `Err`；`check_app_update_available` 恒 `Ok(None)`；不得有 `updater_builder()` / `update.install()` |
 | `src/components/settings/AboutSection.tsx` + `src/components/DatabaseUpgrade.tsx` | 「下载更新」按钮 → `FORK_RELEASES_URL`（GitHub Releases）；无升级提示卡片、无 `installUpdateAndRestart` 调用 |
@@ -160,7 +160,7 @@ name === "One API" || isOfficial === true || category === "official"
 
 **绊线测试**（同步后跑 `pnpm test:unit`，这 3 个挂了就是被合回来了）：
 - `tests/config/forkInAppUpdateDisabled.test.ts` — endpoints 必须为空、不得产出更新包、
-  不得残留上游域名、警告注释必须还在
+  不得残留上游域名、`tauri.conf.json` 必须是严格 JSON、Cargo.toml 里的警告注释必须还在
 - `src/lib/updater.test.ts` — `checkForUpdate` 不碰网络、`IN_APP_UPDATE_ENABLED === false`
 - `tests/components/AboutSection.update.test.tsx`、`tests/components/DatabaseUpgrade.update.test.tsx`
   — 即便 `hasUpdate=true` 也绝不出现安装入口
@@ -285,7 +285,7 @@ cd src-tauri && cargo check && cargo test
   的 reasoning 断言改为 fork 的真实不变式。
 - **验证结果**：
   - `tsc --noEmit`：零错误
-  - `pnpm test:unit`：**191 个测试文件 / 1728 个测试全部通过**
+  - `pnpm test:unit`：**191 个测试文件 / 1729 个测试全部通过**
   - `pnpm format:check`：通过
   - `pnpm build:renderer`：通过
   - 守卫测试全过：`onlyOfficialAndOneApiPresets` / `forkInAppUpdateDisabled` /
@@ -295,7 +295,18 @@ cd src-tauri && cargo check && cargo test
     pi/mcode 测试、`mcp_commands.rs` 删 6 个 pi/mcode 测试但保留 27 个
     claude/codex/gemini/grokbuild 测试）；`providers.rs` 的 One API 种子
     （`init_default_oneapi_providers` / `oneapi_providers_seeded`）auto-merge 干净。
-    **发版前请在有 Rust 的机器上补跑，或依赖 CI。**
+- **发版事故（v4.0.12 首次构建失败，已修复）**：
+  - 症状：CI `build-windows.yml` Windows + macOS 双双报
+    `unable to parse JSON Tauri config file ... key must be a string at line 40 column 5`
+  - 根因：给 `src-tauri/tauri.conf.json` 写了 `//` 注释。当初用 `tauri info`
+    验证"支持 JSONC"——**验证手段不充分**：`tauri info` 走宽松路径，编译期
+    `tauri-build` 用严格 JSON 解析器，注释直接让构建挂掉。
+  - 修复：注释全部撤出 `tauri.conf.json`，警告文本改放
+    `src-tauri/Cargo.toml`（TOML 的 `#` 注释合法）；守卫测试新增两条——
+    `tauri.conf.json` 必须能被 `JSON.parse` 直接解析（不许先剥注释）且不得含
+    `//` / `/*`，以及警告文本必须存在于 Cargo.toml。
+  - **教训**：`tauri.conf.json` 永远写严格 JSON。要加说明就写进
+    `Cargo.toml` / `src/lib/updater.ts` / 本档。
 
 ### v3.20.6（2026-09-26）删除 Pi / MiniMax Code 应用（前端 + Rust 全量剥离）
 
