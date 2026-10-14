@@ -513,6 +513,11 @@ pub fn run() {
             set_windows_app_user_model_id(app.handle());
 
             // 注册 Updater 插件（桌面端）；放在 logger 之后，确保失败可诊断。
+            //
+            // 【定制版】插件仍注册以兼容 tauri.conf.json 的 updater 配置块，但
+            // 应用内更新已彻底关闭：配置里 endpoints 为空，命令层也已短路
+            // （commands::install_update_and_restart / check_app_update_available）。
+            // 详见 src/lib/updater.ts 与 src-tauri/tauri.conf.json 的注释。
             #[cfg(desktop)]
             {
                 if let Err(e) = app

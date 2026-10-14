@@ -40,6 +40,7 @@ import type { AppId } from "@/lib/api/types";
 import { extractErrorMessage } from "@/utils/errorUtils";
 import { isWindows } from "@/lib/platform";
 import { isUpdateAvailable } from "@/lib/version";
+import { FORK_RELEASES_URL } from "@/lib/updater";
 import { ToolUpgradeConfirmDialog } from "./ToolUpgradeConfirmDialog";
 import { ToolInstallRow } from "./ToolInstallRow";
 
@@ -221,7 +222,9 @@ export function AboutSection({ isPortable }: AboutSectionProps) {
   const [isLoadingVersion, setIsLoadingVersion] = useState(
     () => appVersionCache === null,
   );
-  const [isDownloading, setIsDownloading] = useState(false);
+  // 【定制版】应用内更新已关闭，升级只走手动下载（见 src/lib/updater.ts）。
+  // 这里曾经有 isDownloading / hasUpdate / checkUpdate 等一键安装状态，勿再恢复：
+  // installUpdateAndRestart 装的是上游签名的原版安装包，会覆盖定制构建。
   const [toolVersions, setToolVersions] = useState<ToolVersion[]>(
     () => toolVersionsCache?.data ?? [],
   );
@@ -238,8 +241,8 @@ export function AboutSection({ isPortable }: AboutSectionProps) {
   );
   const [showInstallCommands, setShowInstallCommands] = useState(false);
 
-  const { hasUpdate, updateInfo, checkUpdate, resetDismiss, isChecking } =
-    useUpdate();
+  // 仅保留 updateInfo：「更新日志」要展示当前/目标版本号。其余更新状态不再使用。
+  const { updateInfo } = useUpdate();
 
   const [wslShellByTool, setWslShellByTool] = useState<
     Record<string, WslShellPreference>
@@ -456,57 +459,25 @@ export function AboutSection({ isPortable }: AboutSectionProps) {
     void settingsApi.openExternal("https://www.oneapi.work/");
   }, []);
 
-  const handleCheckUpdate = useCallback(async () => {
-    if (hasUpdate) {
-      if (isPortable) {
-        try {
-          await settingsApi.checkUpdates();
-        } catch (error) {
-          console.error("[AboutSection] Portable update failed", error);
-        }
-        return;
-      }
-
-      setIsDownloading(true);
-      try {
-        resetDismiss();
-        const installed = await settingsApi.installUpdateAndRestart();
-        if (!installed) {
-          toast.success(t("settings.upToDate"), { closeButton: true });
-        }
-      } catch (error) {
-        console.error("[AboutSection] Update failed", error);
-        toast.error(t("settings.updateFailed"), {
-          description: extractErrorMessage(error) || undefined,
-          closeButton: true,
-        });
-        try {
-          await settingsApi.checkUpdates();
-        } catch (fallbackError) {
-          console.error(
-            "[AboutSection] Failed to open fallback updater",
-            fallbackError,
-          );
-        }
-      } finally {
-        setIsDownloading(false);
-      }
-      return;
-    }
-
+  /**
+   * 【定制版】升级只走手动下载。
+   *
+   * 这里曾经是「检查更新 → installUpdateAndRestart 一键下载安装」。恢复那条链路
+   * 会把定制构建覆盖成原版（上游更新包用上游私钥签名，只能是原版），详见
+   * src/lib/updater.ts。同步上游后若看到 installUpdateAndRestart / checkUpdates
+   * 的调用，删掉，别合回来。
+   */
+  const handleDownloadUpdate = useCallback(async () => {
     try {
-      const available = await checkUpdate();
-      if (!available) {
-        toast.success(t("settings.upToDate"), { closeButton: true });
-      }
+      await settingsApi.openExternal(FORK_RELEASES_URL);
     } catch (error) {
-      console.error("[AboutSection] Check update failed", error);
-      toast.error(t("settings.checkUpdateFailed"), {
+      console.error("[AboutSection] Failed to open releases page", error);
+      toast.error(t("settings.openReleaseNotesFailed"), {
         description: extractErrorMessage(error) || undefined,
         closeButton: true,
       });
     }
-  }, [checkUpdate, hasUpdate, isPortable, resetDismiss, t]);
+  }, [t]);
 
   const handleCopyInstallCommands = useCallback(async () => {
     try {
@@ -952,55 +923,17 @@ export function AboutSection({ isPortable }: AboutSectionProps) {
             <Button
               type="button"
               size="sm"
-              onClick={handleCheckUpdate}
-              disabled={isChecking || isDownloading}
+              onClick={handleDownloadUpdate}
               className="h-8 gap-1.5 text-xs"
             >
-              {isDownloading ? (
-                <>
-                  <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                  {t("settings.updating")}
-                </>
-              ) : hasUpdate ? (
-                <>
-                  <Download className="h-3.5 w-3.5" />
-                  {t("settings.updateTo", {
-                    version: updateInfo?.availableVersion ?? "",
-                  })}
-                </>
-              ) : isChecking ? (
-                <>
-                  <RefreshCw className="h-3.5 w-3.5 animate-spin" />
-                  {t("settings.checking")}
-                </>
-              ) : (
-                <>
-                  <RefreshCw className="h-3.5 w-3.5" />
-                  {t("settings.checkForUpdates")}
-                </>
-              )}
+              <Download className="h-3.5 w-3.5" />
+              {t("settings.downloadUpdate")}
             </Button>
           </div>
         </div>
 
-        {hasUpdate && updateInfo && (
-          <motion.div
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: "auto" }}
-            className="rounded-lg bg-primary/10 border border-primary/20 px-4 py-3 text-sm"
-          >
-            <p className="font-medium text-primary mb-1">
-              {t("settings.updateAvailable", {
-                version: updateInfo.availableVersion,
-              })}
-            </p>
-            {updateInfo.notes && (
-              <p className="text-muted-foreground line-clamp-3 leading-relaxed">
-                {updateInfo.notes}
-              </p>
-            )}
-          </motion.div>
-        )}
+        {/* 【定制版】此处原有「检测到新版本」升级提示卡片。应用内更新已关闭，
+            展示该卡片只会把用户引向装原版，故移除；勿随上游同步合回来。 */}
       </motion.div>
 
       <div className="space-y-3">

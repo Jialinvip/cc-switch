@@ -50,12 +50,16 @@ pub async fn copy_text_to_clipboard(text: String) -> Result<bool, String> {
     .map_err(|e| format!("剪贴板任务执行失败: {e}"))?
 }
 
-/// 检查更新
+/// 打开定制版发布页（手动下载入口）。
+///
+/// 【定制版】应用内更新已彻底关闭（见 src/lib/updater.ts）：这里不再"检查更新"，
+/// 只负责把用户送到本仓库 GitHub Releases 手动下载安装包。勿改回上游发布域名
+/// （dl.ccswitch.io / oneapi.work / github.com/farion1231），那会把用户引去装原版。
 #[tauri::command]
 pub async fn check_for_updates(handle: AppHandle) -> Result<bool, String> {
     handle
         .opener()
-        .open_url("https://www.oneapi.work/releases/latest", None::<String>)
+        .open_url("https://github.com/Jialinvip/cc-switch/releases/latest", None::<String>)
         .map_err(|e| format!("打开更新页面失败: {e}"))?;
 
     Ok(true)

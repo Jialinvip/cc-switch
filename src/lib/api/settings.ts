@@ -53,10 +53,16 @@ export const settingsApi = {
     return await invoke("restart_app");
   },
 
+  /**
+   * 【定制版】应用内更新已关闭：后端命令会直接报错/短路，前端也没有调用方。
+   * 升级请用 `settingsApi.openExternal(FORK_RELEASES_URL)` 手动下载。
+   * 勿在同步上游后把调用方合回来，详见 src/lib/updater.ts。
+   */
   async installUpdateAndRestart(): Promise<boolean> {
     return await invoke("install_update_and_restart");
   },
 
+  /** 【定制版】打开定制版发布页（手动下载入口），并非"检查更新"。 */
   async checkUpdates(): Promise<void> {
     await invoke("check_for_updates");
   },

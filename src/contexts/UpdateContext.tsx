@@ -8,6 +8,11 @@ import React, {
 } from "react";
 import type { UpdateInfo } from "../lib/updater";
 import { checkForUpdate } from "../lib/updater";
+
+// 【定制版】应用内更新已彻底关闭，开关与原因见 src/lib/updater.ts。
+// 这里的自动检查会调 checkForUpdate()，而后者在 IN_APP_UPDATE_ENABLED=false 时
+// 直接返回"已是最新"、不访问任何更新源，所以启动定时器不会弹出升级提示。
+// 同步上游后不必删本文件，但也不要把 IN_APP_UPDATE_ENABLED 改回 true。
 import { extractErrorMessage } from "../utils/errorUtils";
 
 interface UpdateContextValue {
