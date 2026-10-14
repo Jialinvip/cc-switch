@@ -1837,16 +1837,17 @@ fn test_dynamic_syntax_guard_also_covers_values_from_config_and_direct_requests(
     assert!(parse_and_merge_config(&request).is_err());
 
     // 前端可以直接把请求发给导入命令，不经过解析器：构建时还要再查一次
+    // （【定制版】此处载体原为 Pi，随 Pi 应用剥离改用 opencode）
     let request = DeepLinkImportRequest {
         resource: "provider".to_string(),
-        app: Some("pi".to_string()),
+        app: Some("opencode".to_string()),
         name: Some("Example".to_string()),
         endpoint: Some("https://api.example.com/v1".to_string()),
         api_key: Some("!printf review-fixture".to_string()),
         model: Some("m".to_string()),
         ..Default::default()
     };
-    assert!(build_provider_from_request(&AppType::Pi, &request).is_err());
+    assert!(build_provider_from_request(&AppType::OpenCode, &request).is_err());
 }
 
 // =============================================================================

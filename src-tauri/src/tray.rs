@@ -53,8 +53,6 @@ fn app_display_name(app: &AppType) -> &'static str {
         AppType::OpenCode => "OpenCode",
         AppType::OpenClaw => "OpenClaw",
         AppType::Hermes => "Hermes",
-        AppType::Pi => "Pi",
-        AppType::Mcode => "MiniMax Code",
     }
 }
 
