@@ -2,6 +2,7 @@
  * 预设供应商配置模板
  */
 import { ProviderCategory } from "../types";
+import type { PresetFamilyFields } from "./presetFamilies";
 
 export interface TemplateValueConfig {
   label: string;
@@ -22,7 +23,7 @@ export interface PresetTheme {
   textColor?: string;
 }
 
-export interface ProviderPreset {
+export interface ProviderPreset extends PresetFamilyFields {
   name: string;
   nameKey?: string; // i18n key for localized display name
   websiteUrl: string;
@@ -31,7 +32,7 @@ export interface ProviderPreset {
   settingsConfig: object;
   isOfficial?: boolean; // 标识是否为官方预设
   isPartner?: boolean; // 标识是否为商业合作伙伴
-  primePartner?: boolean; // 置顶合作伙伴（顶级）：徽章显示为心形
+  primePartner?: boolean; // 旧版的置顶合作伙伴标记；v7 起界面不再读取，新预设不写
   partnerPromotionKey?: string; // 合作伙伴促销信息的 i18n key
   category?: ProviderCategory; // 新增：分类
   // 新增：指定该预设所使用的 API Key 字段名（默认 ANTHROPIC_AUTH_TOKEN）

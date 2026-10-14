@@ -18,7 +18,7 @@
 ## 维护策略：当补丁重打，别跟上游 merge 硬解冲突
 
 上游几乎每次更新都在改这些预设文件。**不要**去逐行解决 merge 冲突，
-而是：**先把 fork 同步成干净的上游（=完整上游），再把下面三件事重新套用一遍。**
+而是：**先把 fork 同步成干净的上游（=完整上游），再把下面 5 处定制重新套用一遍。**
 
 ```bash
 git fetch upstream
@@ -34,7 +34,7 @@ git checkout upstream/main -- src/config/claudeProviderPresets.ts \
   src/config/universalProviderPresets.ts
 # 对其他冲突文件（版本号、图标 index、Cargo.lock 等）逐一手工解决
 # 解决完所有冲突后 git add + git commit（完成 merge）
-# 然后重新套用本文档的三处定制（作为一个新 commit）
+# 然后重新套用本文档的 5 处定制（作为一个新 commit）
 ```
 
 > **经验谈**（v3.16.7 同步）：
@@ -58,7 +58,7 @@ git checkout upstream/main -- src/config/claudeProviderPresets.ts \
 
 ---
 
-## 定制清单（每次同步后重新套用这三处）
+## 定制清单（每次同步后重新套用这 5 处）
 
 ### 1. 前端预设文件 `src/config/*ProviderPresets.ts`（共 8 个）
 
@@ -136,6 +136,49 @@ name === "One API" || isOfficial === true || category === "official"
 应用会在退出时覆盖你的修改。给 `codex` / `gemini` / `claude-desktop` 补一条 One API 行、
 设 `is_current=1`，并删掉非「官方/One API」的供应商行。改完重启 app 验证。
 
+### 4. 应用内更新必须保持关闭（v4.0.12 起，**极其重要**）
+
+**背景**：`src-tauri/tauri.conf.json` 的 updater 端点原本指向上游发布源
+（`dl.ccswitch.io` / `oneapi.work`），签名 pubkey 也是**上游作者**的 minisign key。
+端点一旦恢复，应用就会提示升级，且一键升级会下载上游签名的**原版**安装包、把
+本仓库的定制构建覆盖掉。本仓库没有上游私钥，也签不出能通过该 pubkey 验签的更新包，
+所以无法"换成自己的更新源"来走一键升级。
+
+**升级方式**：手动下载 https://github.com/Jialinvip/cc-switch/releases
+
+**每次同步上游后，这 4 处必须重新确认：**
+
+| 位置 | 应当是 |
+|------|--------|
+| `src-tauri/tauri.conf.json` | `plugins.updater.endpoints: []`、`bundle.createUpdaterArtifacts: false`，且保留「【定制版】应用内更新已彻底关闭」注释 |
+| `src/lib/updater.ts` | `IN_APP_UPDATE_ENABLED = false`；`checkForUpdate()` 直接返回"已是最新"、不访问网络 |
+| `src-tauri/src/commands/settings.rs` | `install_update_and_restart` 短路返回 `Err`；`check_app_update_available` 恒 `Ok(None)`；不得有 `updater_builder()` / `update.install()` |
+| `src/components/settings/AboutSection.tsx` + `src/components/DatabaseUpgrade.tsx` | 「下载更新」按钮 → `FORK_RELEASES_URL`（GitHub Releases）；无升级提示卡片、无 `installUpdateAndRestart` 调用 |
+
+`src-tauri/src/commands/misc.rs` 的 `check_for_updates` 已改为打开
+`https://github.com/Jialinvip/cc-switch/releases/latest`，**勿改回上游发布域名**。
+
+**绊线测试**（同步后跑 `pnpm test:unit`，这 3 个挂了就是被合回来了）：
+- `tests/config/forkInAppUpdateDisabled.test.ts` — endpoints 必须为空、不得产出更新包、
+  不得残留上游域名、警告注释必须还在
+- `src/lib/updater.test.ts` — `checkForUpdate` 不碰网络、`IN_APP_UPDATE_ENABLED === false`
+- `tests/components/AboutSection.update.test.tsx`、`tests/components/DatabaseUpgrade.update.test.tsx`
+  — 即便 `hasUpdate=true` 也绝不出现安装入口
+
+### 5. 站点链接指向本 fork 的域名
+
+上游的 `github.com/farion1231/cc-switch` 与 `ccswitch.io` 链接要换成：
+
+| 用途 | 本 fork 指向 |
+|------|--------------|
+| 项目/官网入口（「GitHub」按钮、README、Issue 模板 FAQ 链接） | `https://www.oneapi.work/` |
+| 「官方网站」按钮 | `https://www.gptvip.cn` |
+| 安装包下载 / 应用内「下载更新」 | `https://github.com/Jialinvip/cc-switch/releases`（= `FORK_RELEASES_URL`） |
+
+`tests/config/forkInAppUpdateDisabled.test.ts` 只守下载链路；站点链接本身没有测试守卫，
+同步后要肉眼扫一下 `.github/ISSUE_TEMPLATE/*`、`SUPPORT.md`、`docs/user-manual/**`、
+`src/components/settings/AboutSection.tsx`。
+
 ---
 
 ## 测试
@@ -183,6 +226,76 @@ cd src-tauri && cargo check && cargo test
 ---
 
 ## 同步实录
+
+### v4.0.12（2026-10-14，对应上游 v4.0.11）
+
+- **上游提交数**：435 个（v3.20.4 基线 → upstream/main @ v4.0.11，跨 3.x→4.x 大版本）
+- **冲突文件**：103 个（21 DU / 5 UD / 77 UU）
+  - 版本号 4 处统一设为 fork 的 `4.0.12`（`package.json` / `Cargo.toml` /
+    `tauri.conf.json` / `Cargo.lock`）
+  - DU 21 个（fork 已删、上游又改）→ 保持删除：Pi / MiniMax Code 全家
+    （`mcode_config` / `session_usage_{pi,mcode}` / `session_manager/providers/{pi,mcode}`
+    / `mcode_commands.rs` / `PiNativePromptResources` / `PiPromptPanel` /
+    `McodeProviderForm` / `PiProviderForm` / `mcodeProviderPresets` /
+    `piModelCatalog` / `piProviderPresets`）+ 已删厂商测试
+    （`claudeProviderPresets` / `codexChatProviderPresets` / `mimoTokenPlanPresets` /
+    `piProviderPresets`）+ `.github/workflows/release.yml`（fork 用 `build-windows.yml`）
+  - UD 5 个（fork 改了、上游删了）→ 跟随上游删除：`AppSwitcher` /
+    `ProviderActions` / `RoutingActivationBrand` / `AppVisibilitySettings` /
+    `ProviderActions.test`（上游把这些组件并进了 `settings/sections/GeneralSection`）
+  - UU 77 个按"取上游最新逻辑 + 重新套用定制"解决
+- **上游新增文件的处理**：
+  - 删（测已删厂商/已删应用）：`mcodeProviderPresets.test` /
+    `codexProviderPresets.zhipuFlashVision` / `moarkProviderPresets.test` /
+    `commandCodeProviderPresets.test` / `PiPromptPanel.test` /
+    `ProviderForm.codexCopilot.test`（Copilot 预设本 fork 早就不提供）
+  - 保留（模型元数据/搜索别名助手）：`presetFamilies.ts` /
+    `presetModelMetadata.ts` / `presetSearchAliases.ts`——但 `presetModelMetadata`
+    里的 `mcodePresetModelSources` / `piPresetModelSources` 与其 import 一并剥离
+  - `codexProviderPresets.tokenPlanTextOnly.test` 等其他厂商测试随上游进入后，
+    因预设已被裁剪而无法断言，按需改写或删除
+- **预设裁剪结果**（9 个 `*ProviderPresets.ts`，与本表一致）：
+  claude = Claude Official + One API；claudeDesktop = Claude Desktop Official +
+  One API；codex = OpenAI Official + One API（**Azure OpenAI 已删**）；
+  gemini = Google Official + One API；hermes = Nous Research + One API；
+  openclaw / opencode / universal = One API；grokBuild = `grokBuildOfficialPreset`
+  （数组外独立导出）+ One API。顺带删除空置 helper：claudeDesktop 的
+  `mappedRoutes` / `brandedRoutes`、codex 的 `MIMO_CODEX_BASE_INSTRUCTIONS` /
+  本地 `modelCatalog`、grokBuild 的 `OPENROUTER_STYLE_GROK_MODEL`。
+- **定制 #4（应用内更新关闭）重新套用**：上游改过 `tauri.conf.json` /
+  `AboutSection` / `DatabaseUpgrade` / `settings.rs` / `misc.rs` 全部冲突文件，
+  已确认 4 处表格仍满足——endpoints 空、`IN_APP_UPDATE_ENABLED=false`、
+  两个后端命令短路、按钮走 `FORK_RELEASES_URL`。绊线测试 4 个文件全过。
+- **定制 #5（站点链接）重新套用**：Issue 模板 FAQ / `SUPPORT.md` 保留 fork 的
+  `oneapi.work` 链接；安装文档 3 份吸收上游的 ARM MSI 与「解除锁定」说明，
+  下载链接统一到 `https://github.com/Jialinvip/cc-switch/releases`。
+- **Pi 残留清理（新上游文件里）**：`AppGlyph` / `agentStyles` / `presentation` /
+  `usePromptPageCommon` / `DeepLinkImportDialog` / `promptUtils` /
+  `modelMetadataFill`（Pi thinking 子系统整删）/ `AppConfigSection` /
+  `SkillImportDialog` / `UnifiedSkillsPanel` / `providerLabel` / `RequestLogTable`
+  / `useSettings` / `useToolManagement` / `lib/query/prompts`。
+  **保留**：`commands/misc.rs` 与 `useToolManagement.ts` 里 pi/mcode 的 **CLI 工具**
+  项（工具安装功能，与受管应用标签无关）；`useToolManagement.TOOL_APP_IDS` 因此
+  改为 `Partial<Record<ToolName, AppId>>`（pi/mcode 工具无归属应用）。
+  孤儿文件 `src-tauri/src/mcp/pi.rs` 已 `git rm`。
+- **测试适配**：应用数断言 10→8（`NewLayoutDialog` / `SessionManagerPage`）；
+  金标用例表收敛为官方 + One API 并重生成快照（4 份）；`presetFamilies` 的
+  family 断言改用合成 fixture（机制覆盖不缩水）；`sessionFixtures` 的事件覆盖
+  声明去掉 `thinking_level`（此前仅 pi fixture 提供）；`opencodeProviderPresets`
+  的 reasoning 断言改为 fork 的真实不变式。
+- **验证结果**：
+  - `tsc --noEmit`：零错误
+  - `pnpm test:unit`：**191 个测试文件 / 1728 个测试全部通过**
+  - `pnpm format:check`：通过
+  - `pnpm build:renderer`：通过
+  - 守卫测试全过：`onlyOfficialAndOneApiPresets` / `forkInAppUpdateDisabled` /
+    `updater.test.ts` / `AboutSection.update` / `DatabaseUpgrade.update`
+  - Rust：**`cargo fmt` / `clippy` / `test` 本机未跑**（无 Rust 工具链）。
+    三个后台 agent 解决了 24 个 Rust 冲突文件（含 `services/skill.rs` 删 22 个
+    pi/mcode 测试、`mcp_commands.rs` 删 6 个 pi/mcode 测试但保留 27 个
+    claude/codex/gemini/grokbuild 测试）；`providers.rs` 的 One API 种子
+    （`init_default_oneapi_providers` / `oneapi_providers_seeded`）auto-merge 干净。
+    **发版前请在有 Rust 的机器上补跑，或依赖 CI。**
 
 ### v3.20.6（2026-09-26）删除 Pi / MiniMax Code 应用（前端 + Rust 全量剥离）
 

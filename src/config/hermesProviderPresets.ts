@@ -4,6 +4,7 @@
  */
 import type { ProviderCategory } from "../types";
 import type { PresetTheme, TemplateValueConfig } from "./claudeProviderPresets";
+import type { PresetFamilyFields } from "./presetFamilies";
 
 /**
  * Marker field and source values that `hermes_config.rs::get_providers`
@@ -96,7 +97,7 @@ export const hermesApiModes: Array<{
   },
 ];
 
-export interface HermesProviderPreset {
+export interface HermesProviderPreset extends PresetFamilyFields {
   name: string;
   nameKey?: string;
   websiteUrl: string;
@@ -104,7 +105,7 @@ export interface HermesProviderPreset {
   settingsConfig: HermesProviderSettingsConfig;
   isOfficial?: boolean;
   isPartner?: boolean;
-  primePartner?: boolean; // 置顶合作伙伴（顶级）：徽章显示为心形
+  primePartner?: boolean; // 旧版的置顶合作伙伴标记；v7 起界面不再读取，新预设不写
   partnerPromotionKey?: string;
   category?: ProviderCategory;
   templateValues?: Record<string, TemplateValueConfig>;

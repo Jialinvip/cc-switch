@@ -1,4 +1,5 @@
-import { fireEvent, render, screen } from "@testing-library/react";
+import { fireEvent, screen } from "@testing-library/react";
+import { renderWithQueryClient as render } from "../utils/testQueryClient";
 import userEvent from "@testing-library/user-event";
 import { parse as parseToml } from "smol-toml";
 import { describe, expect, it, vi } from "vitest";
@@ -43,6 +44,29 @@ describe("GrokBuildProviderForm", () => {
       container.querySelector<HTMLInputElement>('input[name="name"]');
     expect(baseUrlInput?.value).toBe("https://www.oneapi.work/v1");
     expect(nameInput?.value).toBe("One API");
+  });
+
+  it("points the get-API-key link at the preset's apiKeyUrl", async () => {
+    const user = userEvent.setup();
+    const { container } = render(
+      <GrokBuildProviderForm
+        submitLabel="Save"
+        onSubmit={() => {}}
+        onCancel={() => {}}
+      />,
+    );
+
+    // 【定制版】上游此处的 fixture 是已删厂商 88API，改成 One API。
+    await user.click(screen.getByRole("button", { name: /One API/ }));
+
+    const websiteInput = container.querySelector<HTMLInputElement>(
+      'input[name="websiteUrl"]',
+    );
+    expect(websiteInput?.value).toBe("https://www.oneapi.work");
+    expect(screen.getByRole("link", { name: /API Key/ })).toHaveAttribute(
+      "href",
+      "https://www.oneapi.work",
+    );
   });
 
   it("submits a complete config.toml payload with Grok defaults", async () => {
@@ -104,6 +128,9 @@ describe("GrokBuildProviderForm", () => {
     expect(container.querySelector("#grokbuild-context-window")).toHaveValue(
       500000,
     );
+    // 默认的 Responses 格式不再把高级区自动展开。
+    expect(screen.queryByText("上游格式")).toBeNull();
+    fireEvent.click(screen.getByRole("button", { name: /高级选项/ }));
     expect(screen.getByText("上游格式")).toBeInTheDocument();
   });
 
@@ -254,11 +281,8 @@ context_window = 500000
     // Grok 没有模型映射目录，不应出现"映射第一行"条款
     expect(screen.queryByText(/映射第一行/)).toBeNull();
 
-    // Chat 格式且无已配置高级值时高级区默认折叠，折叠提示也应是 Grok 版本
-    expect(
-      screen.getByText(/Anthropic Messages 协议的供应商需开启路由接管/),
-    ).toBeInTheDocument();
-    expect(screen.queryByText(/模型映射、思考能力/)).toBeNull();
+    // Chat 格式且无已配置高级值时高级区默认折叠，折叠时不再挂说明小字
+    expect(screen.queryByText(/思考能力与自定义 User-Agent/)).toBeNull();
 
     await user.click(screen.getByRole("button", { name: /高级选项/ }));
     expect(
@@ -294,9 +318,11 @@ context_window = 500000
       />,
     );
 
-    expect(screen.getByText(/^默认上限 8192 容易在长回答/)).toBeInTheDocument();
+    // 说明在「?」里（读屏副本一直在页面上），页面上只留超限会 400 的提醒。
+    expect(screen.getByText(/^默认上限 8192，长回答/)).toBeInTheDocument();
+    expect(screen.queryByText(/^Codex 不带输出上限/)).toBeNull();
     expect(
-      screen.queryByText(/Codex 不会把 model_max_output_tokens/),
-    ).toBeNull();
+      screen.getByText("不要超过模型或网关的真实输出上限，否则会返回 400。"),
+    ).toBeInTheDocument();
   });
 });

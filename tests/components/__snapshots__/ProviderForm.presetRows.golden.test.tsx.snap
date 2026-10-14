@@ -1,0 +1,108 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`ProviderForm 预设新增行金标 > claude > Claude Official 1`] = `
+{
+  "apiKeyLocations": [],
+  "row": {
+    "icon": "anthropic",
+    "iconColor": "#D4915D",
+    "meta": {
+      "endpointAutoSelect": true,
+    },
+    "name": "Claude Official",
+    "notes": "",
+    "presetCategory": "official",
+    "presetId": "claude-<index>",
+    "settingsConfig": {
+      "env": {},
+    },
+    "websiteUrl": "https://www.anthropic.com/claude-code",
+  },
+}
+`;
+
+exports[`ProviderForm 预设新增行金标 > claude > One API 1`] = `
+{
+  "apiKeyLocations": [
+    "settingsConfig.env.ANTHROPIC_AUTH_TOKEN",
+  ],
+  "row": {
+    "icon": "oneapi",
+    "iconColor": "",
+    "meta": {
+      "apiFormat": "anthropic",
+      "endpointAutoSelect": true,
+    },
+    "name": "One API",
+    "notes": "",
+    "presetCategory": "aggregator",
+    "presetId": "claude-<index>",
+    "settingsConfig": {
+      "env": {
+        "ANTHROPIC_AUTH_TOKEN": "sk-golden-test",
+        "ANTHROPIC_BASE_URL": "https://www.oneapi.work",
+        "CLAUDE_CODE_AUTO_MODE_SERVER": "0",
+      },
+    },
+    "websiteUrl": "https://www.oneapi.work",
+  },
+}
+`;
+
+exports[`ProviderForm 预设新增行金标 > codex > One API 1`] = `
+{
+  "apiKeyLocations": [
+    "settingsConfig.auth.OPENAI_API_KEY",
+  ],
+  "row": {
+    "icon": "oneapi",
+    "iconColor": "",
+    "meta": {
+      "apiFormat": "openai_responses",
+      "endpointAutoSelect": true,
+    },
+    "name": "One API",
+    "notes": "",
+    "presetCategory": "aggregator",
+    "presetId": "codex-<index>",
+    "settingsConfig": {
+      "auth": {
+        "OPENAI_API_KEY": "sk-golden-test",
+      },
+      "config": "model_provider = "custom"
+model = "gpt-5.5"
+model_reasoning_effort = "high"
+disable_response_storage = true
+
+[model_providers.custom]
+name = "oneapi"
+base_url = "https://www.oneapi.work/v1"
+wire_api = "responses"
+requires_openai_auth = true",
+    },
+    "websiteUrl": "https://www.oneapi.work",
+  },
+}
+`;
+
+exports[`ProviderForm 预设新增行金标 > codex > OpenAI Official 1`] = `
+{
+  "apiKeyLocations": [],
+  "row": {
+    "icon": "openai",
+    "iconColor": "#00A67E",
+    "meta": {
+      "endpointAutoSelect": true,
+    },
+    "name": "OpenAI Official",
+    "notes": "",
+    "presetCategory": "official",
+    "presetId": "codex-<index>",
+    "settingsConfig": {
+      "auth": {},
+      "config": "",
+    },
+    "websiteUrl": "https://chatgpt.com/codex",
+  },
+}
+`;

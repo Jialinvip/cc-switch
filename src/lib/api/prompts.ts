@@ -11,6 +11,12 @@ export interface Prompt {
   updatedAt?: number;
 }
 
+/** 提示词目标文件：path 是完整路径（复制用），displayPath 把主目录写成 ~（显示用）。 */
+export interface PromptFileLocation {
+  path: string;
+  displayPath: string;
+}
+
 export const promptsApi = {
   async getPrompts(app: AppId): Promise<Record<string, Prompt>> {
     return await invoke("get_prompts", { app });
@@ -34,5 +40,9 @@ export const promptsApi = {
 
   async getCurrentFileContent(app: AppId): Promise<string | null> {
     return await invoke("get_current_prompt_file_content", { app });
+  },
+
+  async getFileLocation(app: AppId): Promise<PromptFileLocation> {
+    return await invoke("get_prompt_file_location", { app });
   },
 };

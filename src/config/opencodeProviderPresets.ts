@@ -1,7 +1,8 @@
 import type { ProviderCategory, OpenCodeProviderConfig } from "../types";
 import type { PresetTheme, TemplateValueConfig } from "./claudeProviderPresets";
+import type { PresetFamilyFields } from "./presetFamilies";
 
-export interface OpenCodeProviderPreset {
+export interface OpenCodeProviderPreset extends PresetFamilyFields {
   name: string;
   nameKey?: string; // i18n key for localized display name
   websiteUrl: string;
@@ -9,7 +10,7 @@ export interface OpenCodeProviderPreset {
   settingsConfig: OpenCodeProviderConfig;
   isOfficial?: boolean;
   isPartner?: boolean;
-  primePartner?: boolean; // 置顶合作伙伴（顶级）：徽章显示为心形
+  primePartner?: boolean; // 旧版的置顶合作伙伴标记；v7 起界面不再读取，新预设不写
   partnerPromotionKey?: string;
   category?: ProviderCategory;
   templateValues?: Record<string, TemplateValueConfig>;
@@ -276,21 +277,6 @@ export const OPENCODE_PRESET_MODEL_VARIANTS: Record<
     },
   ],
 };
-
-/**
- * Look up preset metadata for a model by npm package and model ID.
- * Returns enrichment fields (options, limit, modalities) that can be
- * merged into a model definition when the user's config doesn't already
- * provide them.
- */
-export function getPresetModelDefaults(
-  npm: string,
-  modelId: string,
-): PresetModelVariant | undefined {
-  const models = OPENCODE_PRESET_MODEL_VARIANTS[npm];
-  if (!models) return undefined;
-  return models.find((m) => m.id === modelId);
-}
 
 export const opencodeProviderPresets: OpenCodeProviderPreset[] = [
   {

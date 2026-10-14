@@ -5,60 +5,28 @@ import {
   screen,
   waitFor,
 } from "@testing-library/react";
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 
 import PromptFormPanel from "@/components/prompts/PromptFormPanel";
+import type { Prompt } from "@/lib/api";
 
 vi.mock("react-i18next", () => ({
   useTranslation: () => ({
-    t: (key: string) => key,
+    t: (key: string, options?: Record<string, unknown>) =>
+      options?.file ? `${key}:${String(options.file)}` : key,
   }),
 }));
 
-vi.mock("@/components/common/FullScreenPanel", () => ({
-  FullScreenPanel: ({
-    onClose,
-    footer,
-    children,
-  }: {
-    onClose: () => void;
-    footer?: React.ReactNode;
-    children: React.ReactNode;
-  }) => (
-    <div>
-      <button type="button" onClick={onClose}>
-        panel-close
-      </button>
-      {children}
-      {footer}
-    </div>
-  ),
-}));
-
-vi.mock("@/components/MarkdownEditor", () => ({
-  default: ({
-    value,
-    onChange,
-    readOnly,
-  }: {
-    value: string;
-    onChange: (value: string) => void;
-    readOnly?: boolean;
-  }) => (
-    <textarea
-      aria-label="markdown-editor"
-      value={value}
-      disabled={readOnly}
-      onChange={(event) => onChange(event.target.value)}
-    />
-  ),
-}));
+const active: Prompt = {
+  id: "team",
+  name: "Team rules",
+  content: "# Rules",
+  enabled: true,
+  createdAt: 1,
+  updatedAt: 1,
+};
 
 describe("PromptFormPanel", () => {
-  beforeEach(() => {
-    document.documentElement.classList.remove("dark");
-  });
-
   it("submits once and refuses to close while saving", async () => {
     let resolveSave!: () => void;
     const onSave = vi.fn(
@@ -72,17 +40,19 @@ describe("PromptFormPanel", () => {
       <PromptFormPanel appId="claude" onSave={onSave} onClose={onClose} />,
     );
 
-    const nameInput = screen.getByLabelText("prompts.name");
+    const nameInput = screen.getByLabelText(/prompts.name/);
     fireEvent.change(nameInput, { target: { value: "My Prompt" } });
-    const saveButton = screen.getByRole("button", { name: "common.save" });
+    const saveButton = screen.getByRole("button", {
+      name: "prompts.addSubmit",
+    });
     fireEvent.click(saveButton);
     fireEvent.click(saveButton);
-    fireEvent.click(screen.getByRole("button", { name: "panel-close" }));
+    fireEvent.click(screen.getByRole("button", { name: "common.cancel" }));
 
     expect(onSave).toHaveBeenCalledTimes(1);
     expect(onClose).not.toHaveBeenCalled();
     expect(nameInput).toBeDisabled();
-    expect(screen.getByLabelText("markdown-editor")).toBeDisabled();
+    expect(screen.getByLabelText("prompts.content")).toBeDisabled();
 
     await act(async () => {
       resolveSave();
@@ -96,13 +66,54 @@ describe("PromptFormPanel", () => {
     const onClose = vi.fn();
     render(<PromptFormPanel appId="codex" onSave={onSave} onClose={onClose} />);
 
-    fireEvent.change(screen.getByLabelText("prompts.name"), {
+    fireEvent.change(screen.getByLabelText(/prompts.name/), {
       target: { value: "Codex Prompt" },
     });
-    fireEvent.click(screen.getByRole("button", { name: "common.save" }));
+    fireEvent.click(screen.getByRole("button", { name: "prompts.addSubmit" }));
 
     await waitFor(() => expect(onSave).toHaveBeenCalledTimes(1));
     expect(onClose).not.toHaveBeenCalled();
-    expect(screen.getByLabelText("prompts.name")).toBeEnabled();
+    expect(screen.getByLabelText(/prompts.name/)).toBeEnabled();
   });
+
+  it("explains a missing name only after a save attempt", () => {
+    const onSave = vi.fn();
+    render(
+      <PromptFormPanel appId="hermes" onSave={onSave} onClose={vi.fn()} />,
+    );
+
+    expect(
+      screen.queryByText("prompts.nameRequiredHermes"),
+    ).not.toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: "prompts.addSubmit" }));
+
+    expect(screen.getByText("prompts.nameRequiredHermes")).toBeInTheDocument();
+    expect(screen.getByLabelText(/prompts.name/)).toHaveAttribute(
+      "aria-invalid",
+      "true",
+    );
+    expect(onSave).not.toHaveBeenCalled();
+  });
+
+  it("names the overwritten file on the save button of the enabled prompt", () => {
+    render(
+      <PromptFormPanel
+        appId="hermes"
+        editingId="team"
+        initialData={active}
+        onSave={vi.fn()}
+        onClose={vi.fn()}
+      />,
+    );
+
+    expect(
+      screen.getByRole("button", { name: "prompts.saveAndOverwrite:SOUL.md" }),
+    ).toBeInTheDocument();
+    // 删除只在列表里，编辑页底栏只有取消和保存
+    expect(
+      screen.queryByRole("button", { name: "common.delete" }),
+    ).not.toBeInTheDocument();
+  });
+
+  // 【定制版】上游此处还有 Pi / MiniMax Code 提示词用例，随应用剥离一并移除。
 });

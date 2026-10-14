@@ -10,6 +10,7 @@
  */
 import { ProviderCategory } from "../types";
 import type { PresetTheme } from "./claudeProviderPresets";
+import type { PresetFamilyFields } from "./presetFamilies";
 
 export type ClaudeDesktopApiFormat =
   | "anthropic"
@@ -40,14 +41,14 @@ export const CLAUDE_DESKTOP_ROLE_ROUTE_IDS = {
 
 export type ClaudeDesktopRoleId = keyof typeof CLAUDE_DESKTOP_ROLE_ROUTE_IDS;
 
-export interface ClaudeDesktopProviderPreset {
+export interface ClaudeDesktopProviderPreset extends PresetFamilyFields {
   name: string;
   nameKey?: string;
   websiteUrl: string;
   apiKeyUrl?: string;
   category?: ProviderCategory;
   isPartner?: boolean;
-  primePartner?: boolean; // 置顶合作伙伴（顶级）：徽章显示为心形
+  primePartner?: boolean; // 旧版的置顶合作伙伴标记；v7 起界面不再读取，新预设不写
   partnerPromotionKey?: string;
 
   baseUrl: string;
@@ -82,6 +83,11 @@ const passthroughRoutes = (supports1m = false): ClaudeDesktopRoutePreset[] => [
     supports1m,
   },
 ];
+
+/**
+ * 非 Claude 上游模型用此工厂：route ID 使用 Claude Desktop 能通过校验的
+ * Sonnet/Opus/Haiku 路由，真实品牌名只写入 labelOverride 和 upstreamModel。
+ */
 
 export const claudeDesktopProviderPresets: ClaudeDesktopProviderPreset[] = [
   {

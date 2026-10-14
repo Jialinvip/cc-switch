@@ -10,6 +10,7 @@ import type {
   OpenClawDefaultModel,
 } from "../types";
 import type { PresetTheme, TemplateValueConfig } from "./claudeProviderPresets";
+import type { PresetFamilyFields } from "./presetFamilies";
 
 /** Suggested default model configuration for a preset */
 export interface OpenClawSuggestedDefaults {
@@ -19,7 +20,7 @@ export interface OpenClawSuggestedDefaults {
   modelCatalog?: Record<string, { alias?: string }>;
 }
 
-export interface OpenClawProviderPreset {
+export interface OpenClawProviderPreset extends PresetFamilyFields {
   name: string;
   nameKey?: string; // i18n key for localized display name
   websiteUrl: string;
@@ -28,7 +29,7 @@ export interface OpenClawProviderPreset {
   settingsConfig: OpenClawProviderConfig;
   isOfficial?: boolean;
   isPartner?: boolean;
-  primePartner?: boolean; // 置顶合作伙伴（顶级）：徽章显示为心形
+  primePartner?: boolean; // 旧版的置顶合作伙伴标记；v7 起界面不再读取，新预设不写
   partnerPromotionKey?: string;
   category?: ProviderCategory;
   /** Template variable definitions */

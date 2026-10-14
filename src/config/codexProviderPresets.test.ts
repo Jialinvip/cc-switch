@@ -10,4 +10,6 @@ describe("codexProviderPresets managed OAuth snapshots", () => {
       generateThirdPartyConfig("acme", "https://api.acme.dev/v1", "m1"),
     ).toContain("requires_openai_auth = true");
   });
+
+  // 【定制版】上游此处还有一条 GitHub Copilot 预设快照用例，随第三方预设裁剪一并移除。
 });

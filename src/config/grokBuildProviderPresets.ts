@@ -24,8 +24,9 @@
 import type { ProviderCategory } from "../types";
 import type { CodexApiFormat } from "../types";
 import { GROK_BUILD_DEFAULT_MODEL } from "../utils/grokBuildConfig";
+import type { PresetFamilyFields } from "./presetFamilies";
 
-export interface GrokBuildProviderPreset {
+export interface GrokBuildProviderPreset extends PresetFamilyFields {
   name: string;
   nameKey?: string; // i18n key for localized display name
   websiteUrl: string;

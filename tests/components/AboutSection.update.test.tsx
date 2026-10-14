@@ -97,6 +97,14 @@ vi.mock("framer-motion", () => {
 
 vi.mock("@/assets/icons/app-icon.png", () => ({ default: "app-icon.png" }));
 
+// 上游新增的「What's New」弹窗依赖 settings 上下文，与更新链路无关，替换成空壳。
+vi.mock("@/components/WhatsNewDialog", () => ({
+  WhatsNewDialog: () => null,
+}));
+vi.mock("@/lib/toast", () => ({
+  toast: { success: vi.fn(), error: vi.fn(), info: vi.fn(), warning: vi.fn() },
+}));
+
 vi.mock("@/components/settings/ToolUpgradeConfirmDialog", () => ({
   ToolUpgradeConfirmDialog: () => null,
 }));
