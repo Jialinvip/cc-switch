@@ -4858,7 +4858,6 @@ mod tests {
         assert!(!SkillService::is_symlink(&app_copy(AppType::Claude)));
     }
 
-
     #[test]
     #[serial_test::serial]
     fn import_does_not_record_an_app_the_skill_could_not_be_deployed_to() {
