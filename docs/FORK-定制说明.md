@@ -295,18 +295,36 @@ cd src-tauri && cargo check && cargo test
     pi/mcode 测试、`mcp_commands.rs` 删 6 个 pi/mcode 测试但保留 27 个
     claude/codex/gemini/grokbuild 测试）；`providers.rs` 的 One API 种子
     （`init_default_oneapi_providers` / `oneapi_providers_seeded`）auto-merge 干净。
-- **发版事故（v4.0.12 首次构建失败，已修复）**：
-  - 症状：CI `build-windows.yml` Windows + macOS 双双报
-    `unable to parse JSON Tauri config file ... key must be a string at line 40 column 5`
-  - 根因：给 `src-tauri/tauri.conf.json` 写了 `//` 注释。当初用 `tauri info`
-    验证"支持 JSONC"——**验证手段不充分**：`tauri info` 走宽松路径，编译期
-    `tauri-build` 用严格 JSON 解析器，注释直接让构建挂掉。
-  - 修复：注释全部撤出 `tauri.conf.json`，警告文本改放
-    `src-tauri/Cargo.toml`（TOML 的 `#` 注释合法）；守卫测试新增两条——
-    `tauri.conf.json` 必须能被 `JSON.parse` 直接解析（不许先剥注释）且不得含
-    `//` / `/*`，以及警告文本必须存在于 Cargo.toml。
-  - **教训**：`tauri.conf.json` 永远写严格 JSON。要加说明就写进
-    `Cargo.toml` / `src/lib/updater.ts` / 本档。
+- **发版事故（v4.0.12 构建连挂 4 轮，已全修复）**：
+  - **第 1 轮**：`unable to parse JSON Tauri config file ... key must be a string at
+    line 40 column 5`。根因是给 `src-tauri/tauri.conf.json` 写了 `//` 注释。当初用
+    `tauri info` 验证"支持 JSONC"——**验证手段不充分**：`tauri info` 走宽松路径，
+    编译期 `tauri-build` 用严格 JSON 解析器。修复：注释撤出该文件，警告文本改放
+    `src-tauri/Cargo.toml`；守卫测试新增"必须能被 `JSON.parse` 直接解析"两条。
+  - **第 2 轮**：`AppType::Pi` / `AppType::Mcode` 残留在 agent 负责范围外的文件
+    （`tray.rs`、`deeplink/tests.rs`），编译期 `variant not found`。
+  - **第 3 轮**：`cargo fmt --check` 红（CI Backend Checks 第一道闸）。
+    `commands/misc.rs` 的 `open_url` 实参超过 rustfmt 的 `fn_call_width(60)`——
+    早前误按 `max_width(100)` 判成可合一行；另有 `services/skill.rs` 残留空行。
+  - **第 4 轮**：合并遗漏 31 个编译错误。装上 MSVC 后 `cargo check --all-targets`
+    一次看全：丢失的上游实现（`atomic_write_private` / `prepare_new_provider` /
+    `add_without_switching` / `skill_exists_in_app`）、被误删的**共享**模块
+    `pi_blocks`（Pi 与 OpenClaw 共用的同构 JSONL 映射，OpenClaw 仍依赖）、
+    被一并删掉的测试守卫 `TestHomeGuard` / `StorageLocationGuard`，以及若干
+    pi/mcode 用例残留。
+  - **第 5 轮**：`cargo test` 4 个 deeplink 用例失败——用例表还带着 `pi` 行；
+    另一处用 `!printf`（Pi 专有命令展开语法）断言构建期守卫，改用
+    `${AWS_SECRET_ACCESS_KEY}` 验证现行 `has_dynamic_reference` 仍生效。
+  - **最终验证**（本机已装 Rust 1.95 + VS Build Tools）：`cargo test` 3518 lib +
+    全部集成测试 0 失败；`cargo fmt --check` 通过；`cargo clippy --all-targets`
+    零 warning；前端 `tsc`/`vitest 1729`/`format:check`/`build:renderer` 全绿。
+  - **教训**：
+    1. `tauri.conf.json` 永远写严格 JSON，说明写进 `Cargo.toml` / `updater.ts` / 本档。
+    2. **同步上游后必须本地跑 `cargo check --all-targets` + `cargo test`**，别只靠
+       `tsc`/`vitest`——前端全绿不代表 Rust 能编。装 MSVC 约 10 分钟，省掉的是
+       每轮 CI 往返（本次来回 5 轮）。
+    3. 删 pi/mcode 时**先确认模块是否共享**（`pi_blocks` 就是被误删的共享模块），
+       文件名带 `pi` 不等于只服务 Pi。
 
 ### v3.20.6（2026-09-26）删除 Pi / MiniMax Code 应用（前端 + Rust 全量剥离）
 
