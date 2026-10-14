@@ -78,19 +78,6 @@ impl ValidatedSource {
 /// 校验 `sourcePath` 归属，见模块文档。
 pub fn validate_source(provider_id: &str, source_path: &str) -> Result<ValidatedSource, String> {
     let location = match provider_id {
-        "mcode" => {
-            let id = source_path
-                .strip_prefix("mcode:")
-                .filter(|id| !id.is_empty())
-                .ok_or("Invalid MCode session source")?;
-            SourceLocation::Sqlite {
-                db: canonicalize_existing_path(
-                    &super::providers::mcode::database_path(),
-                    "MCode database",
-                )?,
-                session_id: id.to_string(),
-            }
-        }
         "opencode" if source_path.starts_with("sqlite:") => validate_sqlite_source(
             source_path,
             opencode::parse_sqlite_source(source_path),
@@ -630,9 +617,7 @@ fn project_dir_for(source: &ValidatedSource) -> Option<PathBuf> {
         return Some(dir.clone());
     }
 
-    use super::providers::{
-        claude, codex, gemini, grokbuild, hermes, mcode, openclaw, opencode, pi,
-    };
+    use super::providers::{claude, codex, gemini, grokbuild, hermes, openclaw, opencode};
     let sessions = match source.provider_id.as_str() {
         "codex" => codex::scan_sessions(),
         "claude" => claude::scan_sessions(),
@@ -641,8 +626,6 @@ fn project_dir_for(source: &ValidatedSource) -> Option<PathBuf> {
         "gemini" => gemini::scan_sessions(),
         "grokbuild" => grokbuild::scan_sessions(),
         "hermes" => hermes::scan_sessions(),
-        "pi" => pi::scan_sessions(),
-        "mcode" => mcode::scan_sessions(),
         _ => return None,
     };
     let project = sessions

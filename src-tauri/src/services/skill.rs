@@ -1916,7 +1916,7 @@ impl SkillService {
             let (name, description) = Self::read_skill_name_desc(&skill_md, &dir_name);
 
             // 其他应用保存用户选择。
-            let apps = selection.apps;
+            let mut apps = selection.apps;
 
             // 勾选的应用里还没有这个 Skill（它是在别处发现的）：导入时就投影过去。
             // 只存标志的话，界面显示已启用、应用却读不到，要等下次切换供应商才补上。
@@ -2004,6 +2004,16 @@ impl SkillService {
         path.symlink_metadata()
             .map(|m| m.file_type().is_symlink())
             .unwrap_or(false)
+    }
+
+    fn skill_exists_in_app(directory: &str, app: &AppType) -> bool {
+        let Ok(directory) = Self::require_valid_directory(directory) else {
+            return false;
+        };
+        let Ok(app_dir) = Self::get_app_skills_dir(app) else {
+            return false;
+        };
+        app_dir.join(directory).is_dir()
     }
 
     fn persist_and_sync_new_skill(
@@ -4143,6 +4153,40 @@ pub fn migrate_skills_to_ssot(db: &Arc<Database>) -> Result<usize> {
 mod tests {
     use super::*;
     use tempfile::tempdir;
+
+    /// CC_SWITCH_TEST_HOME 隔离守卫（serial 测试间互斥由 #[serial] 保证，
+    /// 守卫只负责在测试结束后恢复原值）。
+    struct TestHomeGuard(Option<std::ffi::OsString>);
+    impl TestHomeGuard {
+        fn set(home: &Path) -> Self {
+            let guard = Self(std::env::var_os("CC_SWITCH_TEST_HOME"));
+            std::env::set_var("CC_SWITCH_TEST_HOME", home);
+            guard
+        }
+    }
+    impl Drop for TestHomeGuard {
+        fn drop(&mut self) {
+            match self.0.take() {
+                Some(value) => std::env::set_var("CC_SWITCH_TEST_HOME", value),
+                None => std::env::remove_var("CC_SWITCH_TEST_HOME"),
+            }
+        }
+    }
+
+    struct StorageLocationGuard(SkillStorageLocation);
+    impl StorageLocationGuard {
+        fn set(location: SkillStorageLocation) -> Self {
+            let previous = crate::settings::get_skill_storage_location();
+            crate::settings::set_skill_storage_location(location)
+                .expect("set test skill storage location");
+            Self(previous)
+        }
+    }
+    impl Drop for StorageLocationGuard {
+        fn drop(&mut self) {
+            let _ = crate::settings::set_skill_storage_location(self.0);
+        }
+    }
 
     #[test]
     fn skill_state_lock_allows_snapshots_but_excludes_writers() {

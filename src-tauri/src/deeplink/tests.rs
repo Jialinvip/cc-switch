@@ -136,12 +136,7 @@ fn test_parse_deeplink_with_notes() {
     assert_eq!(request.notes, Some("Test notes".to_string()));
 }
 
-#[test]
-fn pi_provider_link_without_a_model_is_rejected_up_front() {
-    let url = "ccswitch://v1/import?resource=provider&app=pi&name=Pi&endpoint=https%3A%2F%2Fapi.example.com%2Fv1&apiKey=sk-test";
-    let err = parse_deeplink_url(url).expect_err("a Pi node without models is unusable");
-    assert!(err.to_string().contains("model"), "{err}");
-}
+// 【定制版】上游此处还有一条 Pi 深链用例，随 Pi 应用剥离删除。
 
 #[test]
 fn test_parse_grokbuild_provider() {
@@ -219,24 +214,8 @@ fn test_parse_rejects_config_url_up_front() {
     assert!(err.to_string().contains("configUrl"), "{err}");
 }
 
-/// 下游 parse_mcp_apps 与 McpService 都支持 Pi / MiniMax Code，解析层不能先把它们拦掉
-#[test]
-fn test_parse_mcp_deeplink_accepts_pi_and_mcode() {
-    let config = BASE64_URL_SAFE_NO_PAD.encode(r#"{"mcpServers":{"fetch":{"command":"uvx"}}}"#);
-    let url = format!("ccswitch://v1/import?resource=mcp&apps=claude,pi,mcode&config={config}");
-
-    let request = parse_deeplink_url(&url).expect("pi and mcode are valid MCP targets");
-    let apps = parse_mcp_apps(request.apps.as_deref().unwrap()).unwrap();
-    assert!(apps.claude && apps.pi && apps.mcode);
-}
-
-#[test]
-fn test_parse_prompt_deeplink_accepts_mcode() {
-    let url = "ccswitch://v1/import?resource=prompt&app=mcode&name=Rules&content=IyBoaQ%3D%3D";
-
-    let request = parse_deeplink_url(url).expect("MiniMax Code has a prompt panel");
-    assert_eq!(request.app.as_deref(), Some("mcode"));
-}
+// 【定制版】上游此处还有两条 Pi / MiniMax Code 的深链用例（MCP 目标、Prompt），
+// 随应用剥离删除。
 
 /// 读取不清除，按编号确认才清除：前端读到后、显示前被打断（effect 重建、窗口销毁），
 /// 下次读取仍能拿到；期间来了新链接，迟到的旧确认不能把新链接清掉
@@ -1702,61 +1681,8 @@ fn test_api_format_rejects_unknown_values_and_unsupported_apps() {
     }
 }
 
-#[test]
-fn test_pi_link_builds_a_models_json_node() {
-    let provider = build_from_link("pi", Some("anthropic"));
-    assert_eq!(
-        provider.settings_config,
-        serde_json::json!({
-            "name": "Example",
-            "baseUrl": "https://api.example.com/v1",
-            "apiKey": "sk-test",
-            "api": "anthropic-messages",
-            "models": [{ "id": "example-model", "name": "example-model" }],
-        })
-    );
-}
-
-// =============================================================================
-// enabled：确认框开关的值。累加式应用决定是否写进应用配置，不调用切换
-// =============================================================================
-
-fn import_pi_link(enabled: Option<bool>) -> (AppState, String) {
-    let mut request =
-        parse_deeplink_url(&provider_link("pi", Some("openai_chat"))).expect("parse link");
-    request.enabled = enabled;
-    let db = Arc::new(Database::memory().expect("create memory db"));
-    let state = AppState::new(db);
-    let id = super::import_provider_from_deeplink(&state, request).expect("import Pi provider");
-    (state, id)
-}
-
-#[test]
-#[serial_test::serial]
-fn test_pi_link_with_the_toggle_off_is_saved_without_touching_models_json() {
-    let _home = TestHomeGuard::new();
-    let _agent = crate::pi_config::test_support::TestAgentDir::new();
-
-    let (state, id) = import_pi_link(Some(false));
-
-    assert!(state.db.get_provider_by_id(&id, "pi").unwrap().is_some());
-    assert!(!crate::pi_config::pi_provider_exists(&id).unwrap());
-}
-
-#[test]
-#[serial_test::serial]
-fn test_pi_link_with_the_toggle_on_or_unset_is_added_to_models_json() {
-    let _home = TestHomeGuard::new();
-    let _agent = crate::pi_config::test_support::TestAgentDir::new();
-
-    for enabled in [Some(true), None] {
-        let (_state, id) = import_pi_link(enabled);
-        let node = crate::pi_config::read_pi_native_provider(&id)
-            .unwrap()
-            .expect("node written to models.json");
-        assert_eq!(node["api"], "openai-completions", "{enabled:?}");
-    }
-}
+// 【定制版】上游此处还有一组 Pi 深链用例（models.json 写入 / enabled 开关），
+// 依赖已删除的 crate::pi_config，随 Pi 应用剥离删除。
 
 // =============================================================================
 // 累加式应用会解释的写法：命令、环境变量、文件引用

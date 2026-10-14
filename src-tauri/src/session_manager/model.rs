@@ -623,10 +623,7 @@ mod tests {
                 "opencode",
                 include_str!("../../../tests/fixtures/sessions/opencode.messages.json"),
             ),
-            (
-                "pi",
-                include_str!("../../../tests/fixtures/sessions/pi.messages.json"),
-            ),
+            // 【定制版】上游此处还有一条 pi fixture，随 Pi 应用剥离删除。
             (
                 "generic",
                 include_str!("../../../tests/fixtures/sessions/generic.messages.json"),
